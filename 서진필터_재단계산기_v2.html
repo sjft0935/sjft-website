@@ -90,7 +90,6 @@
   }
   .card:nth-child(2) { animation-delay: 0.06s; }
   .card:nth-child(3) { animation-delay: 0.12s; }
-  .card:nth-child(4) { animation-delay: 0.18s; }
   @keyframes fadeUp {
     from { opacity:0; transform: translateY(12px); }
     to   { opacity:1; transform: translateY(0); }
@@ -112,7 +111,6 @@
     font-family: var(--mono);
     flex-shrink: 0;
   }
-  .step-badge.blue { background: var(--blue-dark); color: #BFDBFE; }
   .step-badge.amber { background: #92400E; color: #FDE68A; }
   .card-title { font-size: 14px; font-weight: 700; color: var(--text); }
   .card-desc  { font-size: 11px; color: var(--text-mute); margin-left: auto; font-family: var(--mono); }
@@ -231,35 +229,6 @@
   /* ── 결과 패널 ── */
   .result-panel { position: sticky; top: 20px; }
 
-  /* 탭 */
-  .tab-bar {
-    display: flex; gap: 4px;
-    margin-bottom: 14px;
-  }
-  .tab-btn {
-    flex: 1; padding: 9px 10px;
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text-dim);
-    font-size: 12px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s;
-    font-family: var(--sans);
-    text-align: center;
-  }
-  .tab-btn.active {
-    background: rgba(74,222,128,0.1);
-    border-color: var(--green-dim);
-    color: var(--green);
-  }
-  .tab-btn.active.blue-tab {
-    background: rgba(96,165,250,0.1);
-    border-color: var(--blue-dim);
-    color: var(--blue);
-  }
-  .tab-pane { display: none; }
-  .tab-pane.active { display: block; }
-
   /* 폭 시각화 */
   .fabric-vis {
     background: var(--bg2);
@@ -315,7 +284,6 @@
     line-height: 1;
     margin-bottom: 2px;
   }
-  .res-big-val.blue { color: var(--blue); }
   .res-big-unit { font-size: 16px; color: var(--text-dim); font-family: var(--mono); }
   .res-big-sub  { font-size: 12px; color: var(--text-mute); margin-top: 6px; }
 
@@ -336,8 +304,6 @@
   .res-item-unit  { font-size: 11px; color: var(--text-dim); margin-left: 3px; }
   .res-item.highlight { border-color: rgba(74,222,128,0.3); background: rgba(74,222,128,0.05); }
   .res-item.highlight .res-item-val { color: var(--green); }
-  .res-item.highlight-blue { border-color: rgba(96,165,250,0.3); background: rgba(96,165,250,0.05); }
-  .res-item.highlight-blue .res-item-val { color: var(--blue); }
   .res-item.warn-item { border-color: rgba(252,211,77,0.3); background: rgba(252,211,77,0.05); }
   .res-item.warn-item .res-item-val { color: var(--amber); }
 
@@ -355,10 +321,8 @@
   .formula-line { display: flex; justify-content: space-between; align-items: center; }
   .formula-eq   { color: var(--text-dim); }
   .formula-val  { color: var(--green); font-weight: 700; }
-  .formula-val.blue { color: var(--blue); }
   .formula-sep  { border: none; border-top: 1px solid var(--border); margin: 6px 0; }
   .formula-total { color: var(--green); font-weight: 700; font-size: 12px; }
-  .formula-total.blue { color: var(--blue); }
 
   /* 버튼 */
   .btn {
@@ -470,8 +434,6 @@
     .btn, .toast, .alert-box { display: none !important; }
     .result-panel { position: static !important; }
     .main { grid-template-columns: 1fr !important; }
-    .tab-btn { display: none; }
-    .tab-pane { display: block !important; }
     .vis-strip { background: #e0e0e0 !important; }
     .vis-piece { color: #333 !important; border-color: #999 !important; }
   }
@@ -484,7 +446,7 @@
   <div class="header-icon">✂️</div>
   <div>
     <div class="header-title">서진필터 재단 계산기</div>
-    <div class="header-sub">BAG FILTER CUTTING CALCULATOR v2.0</div>
+    <div class="header-sub">BAG FILTER CUTTING CALCULATOR v2.1</div>
   </div>
   <div class="header-tag">내부 전용</div>
 </div>
@@ -505,11 +467,11 @@
       <div class="form-grid four">
         <div class="fg">
           <label class="fl">H (하우징 내경) <span class="unit">mm</span></label>
-          <input type="number" id="h_val" placeholder="예) 162" class="ref-input" oninput="calc()" title="참고용 — 계산에 직접 사용되지 않음">
+          <input type="number" id="h_val" placeholder="예) 162" class="ref-input" oninput="calc()" title="참고용">
         </div>
         <div class="fg">
           <label class="fl">홀 치수 <span class="unit">mm</span> <span class="ref-tag">참고</span></label>
-          <input type="number" id="hole_val" placeholder="예) 158" class="ref-input" oninput="calc()" title="참고용 — 규격 기록·복사에만 사용">
+          <input type="number" id="hole_val" placeholder="예) 158" class="ref-input" oninput="calc()" title="참고용">
         </div>
         <div class="fg">
           <label class="fl">링 치수 <span class="unit">mm</span></label>
@@ -531,7 +493,7 @@
           <div style="display:flex; gap:8px; align-items:center;">
             <button class="fabric-btn" onclick="addQty(-50)" style="padding:8px 12px; flex-shrink:0;">−50</button>
             <button class="fabric-btn" onclick="addQty(-10)" style="padding:8px 12px; flex-shrink:0;">−10</button>
-            <input type="number" id="qty_val" placeholder="300" value="300" oninput="calc()" style="text-align:center; font-size:18px; font-weight:700;">
+            <input type="number" id="qty_val" placeholder="300" value="300" oninput="calc()" style="text-align:center; font-size:14px; font-weight:700; min-width:80px;">
             <button class="fabric-btn" onclick="addQty(10)" style="padding:8px 12px; flex-shrink:0;">+10</button>
             <button class="fabric-btn" onclick="addQty(50)" style="padding:8px 12px; flex-shrink:0;">+50</button>
           </div>
@@ -554,7 +516,7 @@
       <div class="card-header">
         <div class="step-badge">02</div>
         <div class="card-title">원단 설정</div>
-        <div class="card-desc">폭 / 시접 / 스냅링 여유</div>
+        <div class="card-desc">폭 / 시접 / 길이 여유</div>
       </div>
 
       <!-- 원단 폭 빠른 선택 -->
@@ -585,9 +547,9 @@
         <input type="number" id="seam_body" value="20" oninput="calc()" style="margin-top:8px; max-width:140px;">
       </div>
 
-      <!-- 스냅링 박음질 여유 -->
+      <!-- 상부 스냅링 -->
       <div style="margin-bottom:12px;">
-        <label class="fl" style="margin-bottom:8px;">스냅링 박음질 여유 (길이 방향) <span class="unit">mm</span></label>
+        <label class="fl" style="margin-bottom:8px;">상부 스냅링 (길이 방향) <span class="unit">mm</span></label>
         <div class="seam-btns">
           <div class="seam-btn" onclick="setSeam('snap', this, 50)">50mm</div>
           <div class="seam-btn active" onclick="setSeam('snap', this, 100)">100mm</div>
@@ -595,6 +557,12 @@
           <div class="seam-btn" onclick="setSeam('snap', this, 0)">직접입력</div>
         </div>
         <input type="number" id="seam_snap" value="100" oninput="calc()" style="margin-top:8px; max-width:140px;">
+      </div>
+
+      <!-- 하부 덧단 -->
+      <div style="margin-bottom:12px;">
+        <label class="fl" style="margin-bottom:8px;">하부 덧단 (길이 방향) <span class="unit">mm</span></label>
+        <input type="number" id="seam_hem" value="0" oninput="calc()" style="max-width:140px;" placeholder="예) 50">
       </div>
 
       <hr class="divider">
@@ -631,45 +599,10 @@
       </div>
     </div>
 
-    <!-- STEP 3: 하부 원판 -->
+    <!-- STEP 3: 저장된 제품 프로파일 -->
     <div class="card">
       <div class="card-header">
-        <div class="step-badge blue">03</div>
-        <div class="card-title">하부 원판 (바닥 캡) 설정</div>
-        <div class="card-desc">원판 시접 · 별도 계산</div>
-      </div>
-
-      <div style="margin-bottom:14px;">
-        <label class="fl" style="margin-bottom:8px;">원판 시접 (직경 방향 ×2 적용) <span class="unit">mm</span></label>
-        <div class="seam-btns">
-          <div class="seam-btn active" onclick="setDiscSeam(this, 10)">10mm</div>
-          <div class="seam-btn" onclick="setDiscSeam(this, 15)">15mm</div>
-          <div class="seam-btn" onclick="setDiscSeam(this, 20)">20mm</div>
-          <div class="seam-btn" onclick="setDiscSeam(this, 0)">직접입력</div>
-        </div>
-        <input type="number" id="seam_disc" value="10" oninput="calc()" style="margin-top:8px; max-width:140px;">
-      </div>
-
-      <div class="form-grid three">
-        <div class="fg">
-          <label class="fl">원판 재단 직경 <span class="unit">mm</span></label>
-          <input type="number" id="res_disc_dia" readonly placeholder="자동계산" style="color:var(--blue); border-color:rgba(96,165,250,0.3); background:rgba(96,165,250,0.05);">
-        </div>
-        <div class="fg">
-          <label class="fl">원단 1폭당 취수 <span class="unit">개</span></label>
-          <input type="number" id="res_disc_pcs" readonly placeholder="자동계산" style="color:var(--blue); border-color:rgba(96,165,250,0.3); background:rgba(96,165,250,0.05);">
-        </div>
-        <div class="fg">
-          <label class="fl">필요 원단 행수 <span class="unit">행</span></label>
-          <input type="number" id="res_disc_rows" readonly placeholder="자동계산" style="color:var(--blue); border-color:rgba(96,165,250,0.3); background:rgba(96,165,250,0.05);">
-        </div>
-      </div>
-    </div>
-
-    <!-- STEP 4: 저장된 제품 프로파일 -->
-    <div class="card">
-      <div class="card-header">
-        <div class="step-badge amber">04</div>
+        <div class="step-badge amber">03</div>
         <div class="card-title">제품 규격 저장 / 불러오기</div>
         <div class="card-desc">최대 5개 · 브라우저 저장</div>
       </div>
@@ -685,123 +618,61 @@
   <!-- 오른쪽: 결과 -->
   <div class="result-panel">
 
-    <!-- 탭 -->
-    <div class="tab-bar">
-      <button class="tab-btn active" id="tab-body-btn" onclick="switchTab('body')">🔵 본체 원단</button>
-      <button class="tab-btn blue-tab" id="tab-disc-btn" onclick="switchTab('disc')">🟦 하부 원판</button>
+    <!-- 원단 폭 시각화 -->
+    <div class="fabric-vis">
+      <div class="vis-title">▸ 원단 폭 단면 (폭 방향 레이아웃)</div>
+      <div class="vis-strip">
+        <div class="vis-pcs" id="vis-pcs"></div>
+      </div>
+      <div class="vis-labels">
+        <span id="vis-left">원단 폭</span>
+        <span id="vis-right">잔여</span>
+      </div>
     </div>
 
-    <!-- 본체 탭 -->
-    <div class="tab-pane active" id="tab-body">
+    <!-- 경고 -->
+    <div class="alert-box" id="alert-box"></div>
 
-      <!-- 원단 폭 시각화 -->
-      <div class="fabric-vis">
-        <div class="vis-title">▸ 원단 폭 단면 (폭 방향 레이아웃)</div>
-        <div class="vis-strip">
-          <div class="vis-pcs" id="vis-pcs"></div>
-        </div>
-        <div class="vis-labels">
-          <span id="vis-left">원단 폭</span>
-          <span id="vis-right">잔여</span>
-        </div>
-      </div>
-
-      <!-- 경고 -->
-      <div class="alert-box" id="alert-box"></div>
-
-      <!-- 계산 공식 -->
-      <div class="formula-box" id="formula-box">
-        <div style="color:var(--text-mute); font-size:11px;">← 규격을 입력하면 계산식이 표시됩니다</div>
-      </div>
-
-      <!-- 메인 결과 -->
-      <div class="res-card">
-        <div class="res-big-label">▸ 본체 원단 총량</div>
-        <div>
-          <span class="res-big-val" id="res-total-m">—</span>
-          <span class="res-big-unit">M</span>
-        </div>
-        <div class="res-big-sub" id="res-total-sub">수량과 규격을 입력해 주세요</div>
-
-        <div class="res-grid">
-          <div class="res-item highlight">
-            <div class="res-item-label">취수 (1폭당)</div>
-            <div><span class="res-item-val" id="ri-pcs">—</span><span class="res-item-unit">개</span></div>
-          </div>
-          <div class="res-item">
-            <div class="res-item-label">필요 재단 행수</div>
-            <div><span class="res-item-val" id="ri-rows">—</span><span class="res-item-unit">행</span></div>
-          </div>
-          <div class="res-item">
-            <div class="res-item-label">개당 재단 길이 (스냅링 포함)</div>
-            <div><span class="res-item-val" id="ri-unit-len">—</span><span class="res-item-unit">mm</span></div>
-          </div>
-          <div class="res-item warn-item">
-            <div class="res-item-label">여유 포함 총량</div>
-            <div><span class="res-item-val" id="ri-margin">—</span><span class="res-item-unit">M</span></div>
-          </div>
-          <div class="res-item" id="ri-tape-box" style="grid-column:1/-1; border-color:rgba(252,211,77,0.3); background:rgba(252,211,77,0.05);">
-            <div class="res-item-label" style="color:var(--amber-dim);">링테이프 (잔여 폭 활용)</div>
-            <div id="ri-tape-val" style="font-size:13px; color:var(--amber); font-family:var(--mono); margin-top:4px;">규격 입력 후 표시</div>
-          </div>
-        </div>
-      </div>
-
+    <!-- 계산 공식 -->
+    <div class="formula-box" id="formula-box">
+      <div style="color:var(--text-mute); font-size:11px;">← 규격을 입력하면 계산식이 표시됩니다</div>
     </div>
 
-    <!-- 원판 탭 -->
-    <div class="tab-pane" id="tab-disc">
+    <!-- 메인 결과 -->
+    <div class="res-card">
+      <div class="res-big-label">▸ 본체 원단 총량</div>
+      <div>
+        <span class="res-big-val" id="res-total-m">—</span>
+        <span class="res-big-unit">M</span>
+      </div>
+      <div class="res-big-sub" id="res-total-sub">수량과 규격을 입력해 주세요</div>
 
-      <!-- 원판 시각화 -->
-      <div class="fabric-vis">
-        <div class="vis-title">▸ 원판 폭 단면 (폭 방향 레이아웃)</div>
-        <div class="vis-strip">
-          <div class="vis-pcs" id="vis-disc-pcs"></div>
+      <div class="res-grid">
+        <div class="res-item highlight">
+          <div class="res-item-label">취수 (1폭당)</div>
+          <div><span class="res-item-val" id="ri-pcs">—</span><span class="res-item-unit">개</span></div>
         </div>
-        <div class="vis-labels">
-          <span id="vis-disc-left">원단 폭</span>
-          <span id="vis-disc-right">잔여</span>
+        <div class="res-item">
+          <div class="res-item-label">필요 재단 장수</div>
+          <div><span class="res-item-val" id="ri-rows">—</span><span class="res-item-unit">장</span></div>
+        </div>
+        <div class="res-item">
+          <div class="res-item-label">개당 재단 길이</div>
+          <div><span class="res-item-val" id="ri-unit-len">—</span><span class="res-item-unit">mm</span></div>
+        </div>
+        <div class="res-item warn-item">
+          <div class="res-item-label">여유 포함 총량</div>
+          <div><span class="res-item-val" id="ri-margin">—</span><span class="res-item-unit">M</span></div>
+        </div>
+        <div class="res-item" id="ri-tape-box" style="grid-column:1/-1; border-color:rgba(252,211,77,0.3); background:rgba(252,211,77,0.05);">
+          <div class="res-item-label" style="color:var(--amber-dim);">링테이프 (잔여 폭 활용)</div>
+          <div id="ri-tape-val" style="font-size:13px; color:var(--amber); font-family:var(--mono); margin-top:4px;">규격 입력 후 표시</div>
         </div>
       </div>
-
-      <!-- 원판 공식 -->
-      <div class="formula-box" id="formula-disc">
-        <div style="color:var(--text-mute); font-size:11px;">← 링치수를 입력하면 계산식이 표시됩니다</div>
-      </div>
-
-      <!-- 원판 결과 -->
-      <div class="res-card">
-        <div class="res-big-label">▸ 하부 원판 원단 총량</div>
-        <div>
-          <span class="res-big-val blue" id="res-disc-total">—</span>
-          <span class="res-big-unit">M</span>
-        </div>
-        <div class="res-big-sub" id="res-disc-sub">링치수와 수량을 입력해 주세요</div>
-
-        <div class="res-grid">
-          <div class="res-item highlight-blue">
-            <div class="res-item-label">원판 직경 (시접 포함)</div>
-            <div><span class="res-item-val" id="ri-disc-dia">—</span><span class="res-item-unit">mm</span></div>
-          </div>
-          <div class="res-item highlight-blue">
-            <div class="res-item-label">취수 (1폭당)</div>
-            <div><span class="res-item-val" id="ri-disc-pcs">—</span><span class="res-item-unit">개</span></div>
-          </div>
-          <div class="res-item">
-            <div class="res-item-label">필요 행수</div>
-            <div><span class="res-item-val" id="ri-disc-rows">—</span><span class="res-item-unit">행</span></div>
-          </div>
-          <div class="res-item warn-item">
-            <div class="res-item-label">여유 포함 총량</div>
-            <div><span class="res-item-val" id="ri-disc-margin">—</span><span class="res-item-unit">M</span></div>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- 버튼 -->
-    <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사 (본체+원판)</button>
+    <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사</button>
     <button class="btn btn-blue" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
     <button class="btn btn-ghost" onclick="resetAll()">🔄 초기화</button>
 
@@ -811,17 +682,6 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── 탭 전환 ──────────────────────────────
-function switchTab(tab) {
-  document.getElementById('tab-body').classList.toggle('active', tab === 'body');
-  document.getElementById('tab-disc').classList.toggle('active', tab === 'disc');
-  document.getElementById('tab-body-btn').classList.toggle('active', tab === 'body');
-  document.getElementById('tab-disc-btn').classList.toggle('active', tab === 'disc');
-  if (tab === 'disc') {
-    document.getElementById('tab-disc-btn').classList.add('blue-tab');
-  }
-}
-
 // ── 원단 폭 빠른 선택 ────────────────────
 function setFabric(el, val) {
   document.querySelectorAll('.fabric-btn').forEach(b => b.classList.remove('active'));
@@ -853,20 +713,6 @@ function setSeam(type, el, val) {
   calc();
 }
 
-// ── 원판 시접 ───────────────────────────
-function setDiscSeam(el, val) {
-  const group = el.parentElement;
-  group.querySelectorAll('.seam-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  if (val > 0) {
-    document.getElementById('seam_disc').value = val;
-  } else {
-    document.getElementById('seam_disc').value = '';
-    document.getElementById('seam_disc').focus();
-  }
-  calc();
-}
-
 // ── 링테이프 폭 빠른 선택 ───────────────
 function setTapeW(el, val) {
   const group = el.parentElement;
@@ -894,106 +740,79 @@ function calc() {
   const fabricW = parseFloat(document.getElementById('fabric_w').value)    || 0;
   const seamB   = parseFloat(document.getElementById('seam_body').value)   || 0;
   const snapAdd = parseFloat(document.getElementById('seam_snap').value)   || 100;
+  const hemAdd  = parseFloat(document.getElementById('seam_hem').value)    || 0;
   const qty     = parseInt(document.getElementById('qty_val').value)       || 0;
   const margin  = parseFloat(document.getElementById('margin_val').value)  || 0;
   const tapeW   = parseFloat(document.getElementById('tape_w').value)      || 67;
-  const seamDisc= parseFloat(document.getElementById('seam_disc').value)   || 10;
 
-  // ── 본체 폭 방향 ──
+  // ── 폭 방향 ──
   const circ      = ring * Math.PI;
   const needW     = circ + seamB;
   const pcsPerRow = fabricW > 0 ? Math.floor(fabricW / needW) : 0;
   const remainW   = fabricW > 0 ? fabricW - (pcsPerRow * needW) : 0;
 
-  // ── 본체 길이 방향 ──
-  const cutLen    = lenMm + snapAdd;
-  const rows      = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;
-  const totalMm   = rows * cutLen;
-  const totalM    = totalMm / 1000;
+  // ── 길이 방향 ──
+  const cutLen  = lenMm + snapAdd + hemAdd;
+  const rows    = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;
+  const totalMm = rows * cutLen;
+  const totalM  = totalMm / 1000;
   const totalMMargin = totalM * (1 + margin / 100);
 
   // ── 링테이프 ──
   const tapePerRow   = remainW >= tapeW ? Math.floor(remainW / tapeW) : 0;
   const totalTapePcs = tapePerRow * rows;
 
-  // ── 하부 원판 ──
-  const discDia   = ring + seamDisc * 2;
-  const discPcs   = fabricW > 0 && discDia > 0 ? Math.floor(fabricW / discDia) : 0;
-  const discRows  = discPcs > 0 ? Math.ceil(qty / discPcs) : 0;
-  const discRemW  = fabricW > 0 ? fabricW - discPcs * discDia : 0;
-  const discTotalM = (discRows * discDia) / 1000;
-  const discTotalMMargin = discTotalM * (1 + margin / 100);
-
-  // ── 본체 중간값 출력 ──
+  // ── 중간값 출력 ──
   document.getElementById('res_need_w').value = ring && seamB ? `${circ.toFixed(1)} + ${seamB} = ${needW.toFixed(1)}` : '';
   document.getElementById('res_pcs').value    = pcsPerRow || '';
   document.getElementById('res_need_l').value = cutLen || '';
 
-  // ── 원판 중간값 출력 ──
-  document.getElementById('res_disc_dia').value  = discDia || '';
-  document.getElementById('res_disc_pcs').value  = discPcs || '';
-  document.getElementById('res_disc_rows').value = discRows || '';
-
-  // ── 본체 공식 박스 ──
+  // ── 공식 박스 ──
   if (ring && lenMm && fabricW) {
+    const lenLine = hemAdd > 0
+      ? `길이(${lenMm}) + 스냅링(${snapAdd}) + 덧단(${hemAdd})`
+      : `길이(${lenMm}) + 스냅링(${snapAdd})`;
     document.getElementById('formula-box').innerHTML = `
       <div class="formula-line"><span class="formula-eq">링(${ring}) × π</span><span class="formula-val">${circ.toFixed(2)} mm</span></div>
       <div class="formula-line"><span class="formula-eq">둘레 + 시접(${seamB})</span><span class="formula-val">= ${needW.toFixed(2)} mm</span></div>
       <div class="formula-line"><span class="formula-eq">원단폭(${fabricW}) ÷ ${needW.toFixed(2)}</span><span class="formula-val">= ${pcsPerRow}개 / 폭</span></div>
       <div class="formula-line"><span class="formula-eq">잔여 폭</span><span class="formula-val">${remainW.toFixed(0)} mm</span></div>
       <div class="formula-sep"></div>
-      <div class="formula-line"><span class="formula-eq">길이(${lenMm}) + 스냅링(${snapAdd})</span><span class="formula-val">재단 ${cutLen} mm</span></div>
-      <div class="formula-line"><span class="formula-eq">수량(${qty}) ÷ 취수(${pcsPerRow})</span><span class="formula-val">= ${rows} 행</span></div>
-      <div class="formula-line"><span class="formula-eq">${rows}행 × ${cutLen}mm</span><span class="formula-val">= ${totalMm.toFixed(0)} mm</span></div>
+      <div class="formula-line"><span class="formula-eq">${lenLine}</span><span class="formula-val">재단 ${cutLen} mm</span></div>
+      <div class="formula-line"><span class="formula-eq">수량(${qty}) ÷ 취수(${pcsPerRow})</span><span class="formula-val">= ${rows} 장</span></div>
+      <div class="formula-line"><span class="formula-eq">${rows}장 × ${cutLen}mm</span><span class="formula-val">= ${totalMm.toFixed(0)} mm</span></div>
       <div class="formula-sep"></div>
       <div class="formula-line"><span class="formula-total">총 필요 원단</span><span class="formula-total">${totalM.toFixed(2)} M</span></div>
-      ${tapePerRow > 0 ? `<div class="formula-sep"></div><div class="formula-line" style="color:var(--amber)"><span>링테이프 ${tapeW}mm × ${tapePerRow}줄 × ${rows}행</span><span>= ${totalTapePcs}개</span></div>` : ''}
+      ${tapePerRow > 0 ? `<div class="formula-sep"></div><div class="formula-line" style="color:var(--amber)"><span>링테이프 ${tapeW}mm × ${tapePerRow}줄 × ${rows}장</span><span>= ${totalTapePcs}개</span></div>` : ''}
     `;
   } else {
     document.getElementById('formula-box').innerHTML = `<div style="color:var(--text-mute); font-size:11px;">← 규격을 입력하면 계산식이 표시됩니다</div>`;
   }
 
-  // ── 원판 공식 박스 ──
-  if (ring && fabricW && qty) {
-    document.getElementById('formula-disc').innerHTML = `
-      <div class="formula-line"><span class="formula-eq">링(${ring}) + 시접(${seamDisc})×2</span><span class="formula-val blue">${discDia.toFixed(0)} mm</span></div>
-      <div class="formula-line"><span class="formula-eq">원단폭(${fabricW}) ÷ ${discDia.toFixed(0)}</span><span class="formula-val blue">= ${discPcs}개 / 폭</span></div>
-      <div class="formula-line"><span class="formula-eq">잔여 폭</span><span class="formula-val blue">${discRemW.toFixed(0)} mm</span></div>
-      <div class="formula-sep"></div>
-      <div class="formula-line"><span class="formula-eq">수량(${qty}) ÷ 취수(${discPcs})</span><span class="formula-val blue">= ${discRows} 행</span></div>
-      <div class="formula-line"><span class="formula-eq">${discRows}행 × ${discDia.toFixed(0)}mm</span><span class="formula-val blue">= ${(discRows*discDia).toFixed(0)} mm</span></div>
-      <div class="formula-sep"></div>
-      <div class="formula-line"><span class="formula-total blue">원판 원단 총량</span><span class="formula-total blue">${discTotalM.toFixed(2)} M</span></div>
-    `;
-  } else {
-    document.getElementById('formula-disc').innerHTML = `<div style="color:var(--text-mute); font-size:11px;">← 링치수와 수량을 입력하면 계산식이 표시됩니다</div>`;
-  }
-
   // ── 시각화 ──
   renderVis(pcsPerRow, needW, fabricW, remainW, tapePerRow, tapeW);
-  renderDiscVis(discPcs, discDia, fabricW, discRemW);
 
   // ── 경고 ──
   const alertEl = document.getElementById('alert-box');
   let alerts = [];
   if (pcsPerRow === 0 && ring && fabricW) alerts.push(`⚠️ 원단 폭(${fabricW}mm)이 1개 필요 폭(${needW.toFixed(1)}mm)보다 좁습니다.`);
   if (remainW > 0 && remainW < tapeW && pcsPerRow > 0) alerts.push(`ℹ️ 잔여 폭 ${remainW.toFixed(0)}mm — 링테이프(${tapeW}mm) 취수 불가.`);
-  if (tapePerRow > 0) alerts.push(`✅ 잔여 폭 ${remainW.toFixed(0)}mm → 링테이프 ${tapePerRow}줄/행 · 총 ${totalTapePcs}개 취수 가능`);
+  if (tapePerRow > 0) alerts.push(`✅ 잔여 폭 ${remainW.toFixed(0)}mm → 링테이프 ${tapePerRow}줄/장 · 총 ${totalTapePcs}개 취수 가능`);
   if (margin === 0) alerts.push(`💡 여유율 0%입니다. 재단 손실 감안 5% 이상 권장합니다.`);
   alertEl.textContent = alerts.join('\n');
   alertEl.classList.toggle('show', alerts.length > 0);
 
-  // ── 본체 메인 결과 ──
+  // ── 메인 결과 ──
   if (ring && lenMm && fabricW && qty) {
     document.getElementById('res-total-m').textContent = totalM.toFixed(2);
     document.getElementById('res-total-sub').textContent =
-      `${qty}개 생산 · ${pcsPerRow}개/폭 · ${rows}행 · 재단길이 ${cutLen}mm`;
+      `${qty}개 생산 · ${pcsPerRow}개/폭 · ${rows}장 · 재단길이 ${cutLen}mm`;
     document.getElementById('ri-pcs').textContent      = pcsPerRow;
     document.getElementById('ri-rows').textContent     = rows;
     document.getElementById('ri-unit-len').textContent = cutLen;
     document.getElementById('ri-margin').textContent   = totalMMargin.toFixed(2);
     document.getElementById('ri-tape-val').innerHTML   = tapePerRow > 0
-      ? `잔여 ${remainW.toFixed(0)}mm ÷ ${tapeW}mm = <strong style="color:var(--amber)">${tapePerRow}줄/행</strong> &nbsp;→&nbsp; 총 <strong style="color:var(--amber)">${totalTapePcs}개</strong> 취수 가능`
+      ? `잔여 ${remainW.toFixed(0)}mm ÷ ${tapeW}mm = <strong style="color:var(--amber)">${tapePerRow}줄/장</strong> &nbsp;→&nbsp; 총 <strong style="color:var(--amber)">${totalTapePcs}개</strong> 취수 가능`
       : `잔여 ${remainW.toFixed(0)}mm — 링테이프(${tapeW}mm) 취수 <span style="color:var(--red)">불가</span>`;
   } else {
     document.getElementById('res-total-m').textContent = '—';
@@ -1003,26 +822,9 @@ function calc() {
     });
     document.getElementById('ri-tape-val').textContent = '규격 입력 후 표시';
   }
-
-  // ── 원판 메인 결과 ──
-  if (ring && fabricW && qty) {
-    document.getElementById('res-disc-total').textContent = discTotalM.toFixed(2);
-    document.getElementById('res-disc-sub').textContent =
-      `${qty}개 · 원판직경 ${discDia}mm · ${discPcs}개/폭 · ${discRows}행`;
-    document.getElementById('ri-disc-dia').textContent    = discDia;
-    document.getElementById('ri-disc-pcs').textContent    = discPcs;
-    document.getElementById('ri-disc-rows').textContent   = discRows;
-    document.getElementById('ri-disc-margin').textContent = discTotalMMargin.toFixed(2);
-  } else {
-    document.getElementById('res-disc-total').textContent = '—';
-    document.getElementById('res-disc-sub').textContent   = '링치수와 수량을 입력해 주세요';
-    ['ri-disc-dia','ri-disc-pcs','ri-disc-rows','ri-disc-margin'].forEach(id => {
-      document.getElementById(id).textContent = '—';
-    });
-  }
 }
 
-// ── 본체 시각화 ──────────────────────────
+// ── 원단 폭 시각화 ───────────────────────
 function renderVis(pcs, needW, fabricW, remainW, tapePerRow, tapeW) {
   const cont = document.getElementById('vis-pcs');
   cont.innerHTML = '';
@@ -1081,44 +883,6 @@ function renderVis(pcs, needW, fabricW, remainW, tapePerRow, tapeW) {
     : '잔여 없음';
 }
 
-// ── 원판 시각화 ──────────────────────────
-function renderDiscVis(pcs, discDia, fabricW, remainW) {
-  const cont = document.getElementById('vis-disc-pcs');
-  cont.innerHTML = '';
-
-  if (!pcs || !fabricW) {
-    cont.innerHTML = '<div style="color:var(--text-mute);font-size:11px;padding:14px;font-family:var(--mono);">규격 입력 후 표시</div>';
-    document.getElementById('vis-disc-left').textContent  = '원단 폭';
-    document.getElementById('vis-disc-right').textContent = '잔여';
-    return;
-  }
-
-  for (let i = 0; i < pcs; i++) {
-    const el = document.createElement('div');
-    el.className = 'vis-piece';
-    el.style.flex = discDia;
-    el.style.color = 'var(--blue)';
-    el.style.borderRight = '1px dashed rgba(96,165,250,0.3)';
-    el.textContent = `○${i+1}`;
-    cont.appendChild(el);
-  }
-
-  if (remainW > 1) {
-    const rem = document.createElement('div');
-    rem.className = 'vis-piece vis-remainder';
-    rem.style.flex = remainW;
-    rem.style.fontSize = '9px';
-    rem.textContent = `${remainW.toFixed(0)}`;
-    cont.appendChild(rem);
-  }
-
-  const totalUsed = pcs * discDia;
-  document.getElementById('vis-disc-left').textContent =
-    `원단 ${fabricW}mm → 원판 ${pcs}개 (${(totalUsed/fabricW*100).toFixed(1)}% 사용)`;
-  document.getElementById('vis-disc-right').textContent = remainW > 0
-    ? `잔여 ${remainW.toFixed(0)}mm` : '잔여 없음';
-}
-
 // ── 결과 복사 ───────────────────────────
 function copyResult() {
   const h      = document.getElementById('h_val').value      || '—';
@@ -1128,24 +892,19 @@ function copyResult() {
   const fabricW= document.getElementById('fabric_w').value   || '—';
   const seamB  = document.getElementById('seam_body').value  || '—';
   const snapAdd= document.getElementById('seam_snap').value  || '100';
+  const hemAdd = document.getElementById('seam_hem').value   || '0';
   const qty    = document.getElementById('qty_val').value    || '—';
   const margin = document.getElementById('margin_val').value || '0';
-  const seamD  = document.getElementById('seam_disc').value  || '—';
 
-  const totalM    = document.getElementById('res-total-m').textContent;
-  const pcs       = document.getElementById('ri-pcs').textContent;
-  const rows      = document.getElementById('ri-rows').textContent;
-  const unitL     = document.getElementById('ri-unit-len').textContent;
-  const totalMg   = document.getElementById('ri-margin').textContent;
-  const tapeVal   = document.getElementById('ri-tape-val').textContent;
-  const discTotal = document.getElementById('res-disc-total').textContent;
-  const discDia   = document.getElementById('ri-disc-dia').textContent;
-  const discPcs   = document.getElementById('ri-disc-pcs').textContent;
-  const discRows  = document.getElementById('ri-disc-rows').textContent;
-  const discMg    = document.getElementById('ri-disc-margin').textContent;
+  const totalM  = document.getElementById('res-total-m').textContent;
+  const pcs     = document.getElementById('ri-pcs').textContent;
+  const rows    = document.getElementById('ri-rows').textContent;
+  const unitL   = document.getElementById('ri-unit-len').textContent;
+  const totalMg = document.getElementById('ri-margin').textContent;
+  const tapeVal = document.getElementById('ri-tape-val').textContent;
 
   const text = `━━━━━━━━━━━━━━━━━━━━━━━━
-✂️ 서진필터 재단 계산 결과 v2
+✂️ 서진필터 재단 계산 결과
 ━━━━━━━━━━━━━━━━━━━━━━━━
 작성일시: ${new Date().toLocaleString('ko-KR')}
 
@@ -1155,28 +914,21 @@ H${h} / 홀${hole} / 링${ring} × ${lenMm}L
 【 원단 정보 】
 원단 폭: ${fabricW}mm
 본체 시접(폭): ${seamB}mm
-스냅링 여유(길이): ${snapAdd}mm
+상부 스냅링(길이): ${snapAdd}mm
+하부 덧단(길이): ${hemAdd}mm
 
-【 본체 원단 계산 결과 】
+【 재단 계산 결과 】
 생산 수량: ${qty}개
 1폭당 취수: ${pcs}개
-재단 행수: ${rows}행
+재단 장수: ${rows}장
 개당 재단 길이: ${unitL}mm
 ─────────────────────────
-본체 원단 총량: ${totalM}M
+원단 총량: ${totalM}M
 여유(${margin}%) 포함: ${totalMg}M
 링테이프: ${tapeVal}
 
-【 하부 원판 계산 결과 】
-원판 직경(시접${seamD}×2 포함): ${discDia}mm
-1폭당 취수: ${discPcs}개
-재단 행수: ${discRows}행
-─────────────────────────
-원판 원단 총량: ${discTotal}M
-여유(${margin}%) 포함: ${discMg}M
-
 ━━━━━━━━━━━━━━━━━━━━━━━━
-서진필터 재단 계산기 v2
+서진필터 재단 계산기 v2.1
 ━━━━━━━━━━━━━━━━━━━━━━━━`;
 
   navigator.clipboard.writeText(text).then(() => {
@@ -1210,7 +962,7 @@ function saveProfile() {
   const fabricW= document.getElementById('fabric_w').value;
   const seamB  = document.getElementById('seam_body').value;
   const snapAdd= document.getElementById('seam_snap').value;
-  const seamD  = document.getElementById('seam_disc').value;
+  const hemAdd = document.getElementById('seam_hem').value;
 
   if (!ring || !lenMm) {
     showToast('⚠️ 링치수와 길이를 입력하세요');
@@ -1224,7 +976,7 @@ function saveProfile() {
   }
 
   const label = `H${h||'?'} / 링${ring} / ${lenMm}L`;
-  profiles.push({ id: Date.now(), label, ring, h, hole, lenMm, fabricW, seamB, snapAdd, seamD });
+  profiles.push({ id: Date.now(), label, ring, h, hole, lenMm, fabricW, seamB, snapAdd, hemAdd });
   saveProfiles(profiles);
   renderProfiles();
   showToast('💾 규격이 저장되었습니다!');
@@ -1240,7 +992,7 @@ function loadProfile(id) {
   document.getElementById('fabric_w').value    = p.fabricW || '2150';
   document.getElementById('seam_body').value   = p.seamB   || '20';
   document.getElementById('seam_snap').value   = p.snapAdd || '100';
-  document.getElementById('seam_disc').value   = p.seamD   || '10';
+  document.getElementById('seam_hem').value    = p.hemAdd  || '0';
   calc();
   showToast(`📂 "${p.label}" 불러오기 완료`);
 }
@@ -1263,7 +1015,7 @@ function renderProfiles() {
     <div class="profile-item">
       <div class="profile-info">
         <div class="profile-name">${p.label}</div>
-        <div class="profile-spec">원단 ${p.fabricW||'?'}mm · 시접 ${p.seamB||'?'}mm · 스냅링 ${p.snapAdd||'?'}mm</div>
+        <div class="profile-spec">원단 ${p.fabricW||'?'}mm · 시접 ${p.seamB||'?'}mm · 스냅링 ${p.snapAdd||'?'}mm · 덧단 ${p.hemAdd||0}mm</div>
       </div>
       <button class="profile-btn" onclick="loadProfile(${p.id})">불러오기</button>
       <button class="profile-btn del" onclick="deleteProfile(${p.id})">삭제</button>
@@ -1279,8 +1031,8 @@ function resetAll() {
   document.getElementById('fabric_w').value   = '2150';
   document.getElementById('seam_body').value  = '20';
   document.getElementById('seam_snap').value  = '100';
+  document.getElementById('seam_hem').value   = '0';
   document.getElementById('margin_val').value = '5';
-  document.getElementById('seam_disc').value  = '10';
   document.getElementById('tape_w').value     = '67';
   calc();
   showToast('🔄 초기화 완료');
