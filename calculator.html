@@ -723,22 +723,32 @@ function renderTableStructure() {
 
 // ── 결과 셀만 갱신 (입력 DOM 건드리지 않음) ─────────
 function updateTableResults(results) {
+  const s = getShared();
   results.forEach(({ p, r }) => {
-    const pEl = document.getElementById(`r-pcs-${p.id}`);
-    const rEl = document.getElementById(`r-rows-${p.id}`);
-    const mEl = document.getElementById(`r-m-${p.id}`);
-    if (!pEl) return;
+    const pEl  = document.getElementById(`r-pcs-${p.id}`);
+    const rEl  = document.getElementById(`r-rows-${p.id}`);
+    const mEl  = document.getElementById(`r-m-${p.id}`);
     const tlEl = document.getElementById(`r-tlen-${p.id}`);
     const twEl = document.getElementById(`r-tw-${p.id}`);
+    if (!pEl) return;
+
+    // 재단폭: 링치수만 입력되면 즉시 표시 (수량·길이 불필요)
+    const ring = parseFloat(p.ring) || 0;
+    if (ring > 0) {
+      const needW = ring * Math.PI + s.seamB;
+      twEl.textContent = Math.round(needW);
+      twEl.className   = 'tbl-res tbl-res-blue';
+    } else {
+      twEl.textContent = '—'; twEl.className = 'tbl-res mute';
+    }
+
     if (r) {
-      pEl.textContent  = r.pcsPerRow;                  pEl.className  = 'tbl-res';
-      twEl.textContent = Math.round(r.needW);           twEl.className = 'tbl-res' + ' tbl-res-blue';
-      tlEl.textContent = r.cutLen.toLocaleString();     tlEl.className = 'tbl-res';
-      rEl.textContent  = r.rows;                       rEl.className  = 'tbl-res';
-      mEl.textContent  = r.totalMMargin.toFixed(2);    mEl.className  = 'tbl-res amber';
+      pEl.textContent  = r.pcsPerRow;               pEl.className  = 'tbl-res';
+      tlEl.textContent = r.cutLen.toLocaleString();  tlEl.className = 'tbl-res';
+      rEl.textContent  = r.rows;                    rEl.className  = 'tbl-res';
+      mEl.textContent  = r.totalMMargin.toFixed(2); mEl.className  = 'tbl-res amber';
     } else {
       pEl.textContent  = '—'; pEl.className  = 'tbl-res mute';
-      twEl.textContent = '—'; twEl.className = 'tbl-res mute';
       tlEl.textContent = '—'; tlEl.className = 'tbl-res mute';
       rEl.textContent  = '—'; rEl.className  = 'tbl-res mute';
       mEl.textContent  = '—'; mEl.className  = 'tbl-res mute';
