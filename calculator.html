@@ -1195,6 +1195,8 @@ function renderProfiles() {
 // ── 초기화 ───────────────────────────────────────
 function resetAll() {
   if (!confirm('모든 입력을 초기화할까요?')) return;
+
+  // 공통 설정값 초기화
   document.getElementById('fabric_w').value   = '2150';
   document.getElementById('seam_body').value  = '20';
   document.getElementById('seam_snap').value  = '100';
@@ -1202,7 +1204,28 @@ function resetAll() {
   document.getElementById('tape_w').value     = '67';
   document.getElementById('margin_val').value = '5';
   document.getElementById('roll_len').value   = '100';
+
+  // 원단폭 빠른선택 버튼 active 초기화 (2150 활성)
+  document.querySelectorAll('.qbtn.green').forEach(b => b.classList.remove('active'));
+  const fabricBtns = document.querySelectorAll('.qbtn.green');
+  if (fabricBtns[0]) fabricBtns[0].classList.add('active'); // 2,150mm
+
+  // 시접 빠른선택 버튼 active 초기화
+  document.querySelectorAll('.quick-btns').forEach(group => {
+    group.querySelectorAll('.qbtn:not(.green)').forEach(b => b.classList.remove('active'));
+  });
+  // 본체시접 20 활성, 상부스냅링 100 활성
+  const seamGroups = document.querySelectorAll('.quick-btns');
+  if (seamGroups[1]) seamGroups[1].querySelector('.qbtn')?.classList.add('active');
+  if (seamGroups[2]) {
+    const btns = seamGroups[2].querySelectorAll('.qbtn');
+    if (btns[1]) btns[1].classList.add('active'); // 100
+  }
+
+  // 제품 목록 초기화 → 테이블 재렌더
   initProducts();
+  renderTableStructure();
+  calcOnly();
   renderProfiles();
   showToast('🔄 초기화 완료');
 }
