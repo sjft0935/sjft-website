@@ -498,12 +498,11 @@
           <tr>
             <th style="width:30px;">No</th>
             <th>H<br><span style="font-weight:400;color:var(--text-mute)">내경</span></th>
-            <th>홀<br><span style="font-weight:400;color:var(--text-mute)">참고</span></th>
+            <th class="result-col" style="color:var(--blue);">재단 폭<br><span style="font-weight:400">mm</span></th>
             <th>링치수<br><span style="font-weight:400;color:var(--text-mute)">mm ★</span></th>
             <th>길이 L<br><span style="font-weight:400;color:var(--text-mute)">mm ★</span></th>
             <th>수량<br><span style="font-weight:400;color:var(--text-mute)">개 ★</span></th>
             <th class="result-col">취수<br><span style="font-weight:400">개/폭</span></th>
-            <th class="result-col" style="color:var(--blue);">재단 폭<br><span style="font-weight:400">mm</span></th>
             <th class="result-col" style="color:var(--green);">재단 길이<br><span style="font-weight:400">mm</span></th>
             <th class="result-col" style="color:var(--green);">장수<br><span style="font-weight:400">장</span></th>
             <th class="result-col">원단<br><span style="font-weight:400">m</span></th>
@@ -707,8 +706,7 @@ function renderTableStructure() {
       <td class="tbl-num">${String(i+1).padStart(2,'0')}</td>
       <td><input class="tbl-input" type="number" value="${p.h}"      placeholder="예)162"
           oninput="updateField(${p.id},'h',this.value)"></td>
-      <td><input class="tbl-input" type="number" value="${p.hole}"   placeholder="참고"
-          oninput="updateField(${p.id},'hole',this.value)"></td>
+      <td id="r-tw-${p.id}"   class="tbl-res mute">—</td>
       <td><input class="tbl-input" type="number" value="${p.ring}"   placeholder="156"
           oninput="updateField(${p.id},'ring',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
       <td><input class="tbl-input" type="number" value="${p.length}" placeholder="3000"
@@ -716,7 +714,6 @@ function renderTableStructure() {
       <td><input class="tbl-input" type="number" value="${p.qty}"    placeholder="100"
           oninput="updateField(${p.id},'qty',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
       <td id="r-pcs-${p.id}"  class="tbl-res mute">—</td>
-      <td id="r-tw-${p.id}"   class="tbl-res mute">—</td>
       <td id="r-tlen-${p.id}" class="tbl-res mute">—</td>
       <td id="r-rows-${p.id}" class="tbl-res mute">—</td>
       <td id="r-m-${p.id}"   class="tbl-res mute">—</td>
@@ -764,11 +761,11 @@ function renderTfoot(results) {
   tfoot.innerHTML = `
     <tr class="total-row">
       <td colspan="6" class="total-label">합계 (${valid.length}종 · ${totalQty}개)</td>
-      <td colspan="4" class="total-label" style="text-align:center;">순수 합계</td>
+      <td colspan="3" class="total-label" style="text-align:center;">순수 합계</td>
       <td class="total-val">${grandM.toFixed(2)} M</td><td></td>
     </tr>
     <tr class="total-row">
-      <td colspan="10" class="total-label">여유(${mg}%) 포함 최종 발주량</td>
+      <td colspan="9" class="total-label">여유(${mg}%) 포함 최종 발주량</td>
       <td class="total-val amber">${grandMg.toFixed(2)} M</td><td></td>
     </tr>`;
 }
