@@ -578,7 +578,7 @@
           <th>링치수</th>
           <th class="w-col">재단 폭<br><span style="font-weight:400">(mm)</span></th>
           <th>장수</th>
-          <th class="l-col">재단치수길이<br><span style="font-weight:400">(mm)</span></th>
+          <th class="l-col">재단치수길이<br><span style="font-weight:400">필터+스냅+덧단</span></th>
         </tr>
       </thead>
       <tbody id="cut-spec-tbody"></tbody>
@@ -836,14 +836,26 @@ function renderCutSpec(results) {
   if (!valid.length) { card.style.display = 'none'; return; }
   card.style.display = 'block';
 
-  document.getElementById('cut-spec-tbody').innerHTML = valid.map(({ p, r }, i) => `
-    <tr>
+  const s = getShared();
+
+  document.getElementById('cut-spec-tbody').innerHTML = valid.map(({ p, r }, i) => {
+    // 재단치수길이 공식: 필터길이 + 스냅링 [+ 덧단] = cutLen
+    const parts = [p.length];
+    if (s.snapAdd) parts.push(s.snapAdd);
+    if (s.hemAdd)  parts.push(s.hemAdd);
+    const formula = parts.join(' + ');
+
+    return `<tr>
       <td class="cut-spec-num">${String(i+1).padStart(2,'0')}</td>
       <td class="cut-spec-label">H${p.h||'?'} / <strong style="color:var(--text)">${p.ring}</strong></td>
       <td class="cut-spec-val-w">${Math.round(r.needW)}</td>
       <td class="cut-spec-label">${r.rows}장</td>
-      <td class="cut-spec-val-l">${r.totalMm.toLocaleString()}</td>
-    </tr>`).join('');
+      <td class="cut-spec-val-l">
+        <div style="font-size:10px;color:var(--text-mute);font-weight:400;margin-bottom:2px;">${formula}</div>
+        = ${r.cutLen.toLocaleString()}
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 // ── 재단 순서 추천 ───────────────────────────────
