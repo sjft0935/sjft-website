@@ -227,7 +227,7 @@ var PRODUCTS = [
     category: 'water',
     categoryLabel: '수처리필터',
     name: '메쉬망 필터 (Mesh Filter)',
-    image: 'images/products/parts-mesh.jpg',
+    image: 'images/products/wf-mesh.jpg',
     icon: '🕸️',
     summary: '자체 생산 라인에서 직접 제작. 약 100μm 미세 입자까지 여과 가능. 세척 후 반복 사용이 가능해 액체 배관 전처리에 경제적입니다.',
     specs: {
