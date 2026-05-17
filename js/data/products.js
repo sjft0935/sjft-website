@@ -241,42 +241,6 @@ var PRODUCTS = [
     industries: ['식품', '화학', '도료', '분체', '제약']
   },
   {
-    id: 'wf-strainer-01',
-    category: 'water',
-    categoryLabel: '수처리필터',
-    name: '산업용 스트레이너 필터',
-    image: 'images/products/wf-strainer.jpg',
-    icon: '💧',
-    summary: '배관 내 이물질 제거용 1차 필터. Y형·T형·바스켓형 선택 가능.',
-    specs: {
-      '여과 정도': '50 ~ 3,000 μm',
-      '사용 압력': '최대 16 bar',
-      '재질': 'SUS304, SUS316L, Carbon Steel',
-      '연결 방식': '플랜지형, 나사형',
-      '세척 방식': '수동 역세척, 자동 역세척(옵션)',
-      '용도': '냉각수, 공업용수, 원수 전처리'
-    },
-    industries: ['화학', '발전', '철강', '식품', '제약']
-  },
-  {
-    id: 'wf-membrane-01',
-    category: 'water',
-    categoryLabel: '수처리필터',
-    name: '정밀여과 멤브레인 필터',
-    image: 'images/products/wf-membrane.jpg',
-    icon: '🌊',
-    summary: '0.1~0.45μm 정밀 여과. 박테리아·미립자 완전 제거, 공업용수 청정화.',
-    specs: {
-      '여과 정도': '0.1 ~ 0.45 μm',
-      '재질': 'PP, PVDF, PTFE',
-      '최고 사용 온도': '80°C (PP), 140°C (PTFE)',
-      '규격': '10", 20", 30", 40" (주문 제작)',
-      '연결': '222, 226, DOE',
-      '용도': '공업용수 정제, 식품·제약 공정수'
-    },
-    industries: ['제약', '식품', '반도체', '화학']
-  },
-  {
     id: 'wf-bag-01',
     category: 'water',
     categoryLabel: '수처리필터',
@@ -303,7 +267,7 @@ var PRODUCTS = [
     name: '벤투리 (Venturi)',
     image: 'images/products/parts-venturi.jpg',
     icon: '💨',
-    summary: '펄스 제트 방식 탈진 시 압축공기를 필터백에 균일하게 분사하는 탈진 노즐. 탈진 효율에 직결되는 핵심 부품.',
+    summary: '펄스 제트 방식 탈진 시 압축공기를 필터백에 균일하게 분사하는 탈진 노즐. 탈진 효율에 직결되는 핵심 부품입니다.',
     specs: {
       '적용': '펄스 제트 백필터 탈진 시스템',
       '재질': 'Aluminum, Carbon Steel, SUS304 선택',
@@ -318,10 +282,10 @@ var PRODUCTS = [
     id: 'parts-cage-01',
     category: 'parts',
     categoryLabel: '집진기 부품',
-    name: '필터 케이지 (Filter Cage)',
+    name: '백케이지 (Bag Cage)',
     image: 'images/products/parts-cage.jpg',
     icon: '🗂️',
-    summary: '필터백 형태 유지를 위한 금속 지지대. 스파이럴 및 용접형 선택 가능.',
+    summary: '필터백 형태 유지를 위한 금속 지지대. 스파이럴 및 용접형 선택 가능. 탄소강·SUS304·SUS316 재질로 현장 환경에 맞춰 공급합니다.',
     specs: {
       '재질': 'Carbon Steel (아연도금), Stainless 304/316',
       '표면 처리': '아연 도금, 에폭시 코팅, 실리콘 코팅',
@@ -332,31 +296,31 @@ var PRODUCTS = [
     industries: ['철강', '시멘트', '화학', '발전']
   },
   {
-    id: 'parts-valve-01',
+    id: 'parts-diaphragm-01',
     category: 'parts',
     categoryLabel: '집진기 부품',
-    name: '솔레노이드 밸브 & 다이어프램',
-    image: 'images/products/parts-valve.jpg',
-    icon: '🔌',
-    summary: '펄스 제트 방식 탈진에 사용되는 핵심 소모품. 주요 메이커 호환 재고 보유.',
+    name: '다이어프램 (Diaphragm)',
+    image: 'images/products/parts-diaphragm.jpg',
+    icon: '🔧',
+    summary: '펄스 제트 방식 탈진 밸브의 핵심 소모품. 주기적 교체로 탈진 성능을 유지합니다. Goyen·Pentair 등 주요 메이커 호환.',
     specs: {
-      '적용': '펄스 제트 백필터 탈진 시스템',
+      '적용': '펄스 제트 솔레노이드 밸브',
       '호환 메이커': 'Goyen, Pentair, 국산 동급',
       '규격': '1인치, 1.5인치, 2인치',
-      '재질': 'Aluminum Body, Buna-N Diaphragm',
+      '재질': 'Buna-N (NBR), EPDM 선택',
       '재고': '주요 규격 상시 재고',
       '출고': '주문 당일 출고 가능'
     },
-    industries: ['전 산업군 (펄스 제트 방식 운영 현장)']
+    industries: ['전 산업군 (펄스 제트 방식)']
   },
   {
     id: 'parts-manometer-01',
     category: 'parts',
     categoryLabel: '집진기 부품',
-    name: '마노미터 & 차압계',
+    name: '마노미터 (Manometer)',
     image: 'images/products/parts-manometer.jpg',
     icon: '📊',
-    summary: '백필터 차압 모니터링용 압력계. 아날로그·디지털 모델 보유.',
+    summary: '백필터 전·후단 차압을 모니터링하는 압력계. 필터 교체 시기 판단 및 운전 상태 확인에 필수.',
     specs: {
       '측정 범위': '0~500 mmAq (아날로그), 디지털 맞춤',
       '연결부': '1/8인치, 1/4인치 NPT',
@@ -364,6 +328,42 @@ var PRODUCTS = [
       '정확도': '±2% FS',
       '재고': '상시 보유',
       '출고': '주문 다음 날 출고'
+    },
+    industries: ['전 산업군']
+  },
+  {
+    id: 'parts-multitimer-01',
+    category: 'parts',
+    categoryLabel: '집진기 부품',
+    name: '멀티타이머 (Multi-Timer)',
+    image: 'images/products/parts-multitimer.jpg',
+    icon: '⏱️',
+    summary: '펄스 제트 백필터의 탈진 순서와 간격을 자동 제어하는 시퀀스 타이머. 채널 수·탈진 간격·펄스 폭 조절 가능.',
+    specs: {
+      '채널 수': '8, 10, 12, 16, 20ch (모델별)',
+      '탈진 간격': '5 ~ 60초 조절 가능',
+      '펄스 폭': '0.05 ~ 0.5초 조절',
+      '전원': 'AC 220V / DC 24V',
+      '출력': '솔레노이드 밸브 직결 (1A/ch)',
+      '출고': '주요 모델 상시 재고'
+    },
+    industries: ['전 산업군 (펄스 제트 방식)']
+  },
+  {
+    id: 'parts-connector-01',
+    category: 'parts',
+    categoryLabel: '집진기 부품',
+    name: '커넥터 (Connector)',
+    image: 'images/products/parts-connector.jpg',
+    icon: '🔗',
+    summary: '압축공기 배관과 솔레노이드 밸브·멀티타이머를 연결하는 피팅 및 커넥터류. 퀵 커넥터·튜브 피팅·니플 등 다양한 규격 보유.',
+    specs: {
+      '종류': '퀵 커넥터, 튜브 피팅, 유니온 니플',
+      '규격': '1/4인치 ~ 1인치 (NPT·BSP·메트릭)',
+      '재질': 'Brass, SUS304, Nylon 선택',
+      '압력': '최대 16 bar',
+      '재고': '주요 규격 상시 보유',
+      '출고': '주문 당일 출고 가능'
     },
     industries: ['전 산업군']
   }
