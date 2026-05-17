@@ -1,4 +1,5 @@
 User-agent: *
+Allow: /
 Disallow: /admin/
 
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://blackdog82.github.io/sjft-website/sitemap.xml
