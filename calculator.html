@@ -392,6 +392,23 @@
     .wo-sign-line  { border-top:1px solid #ccc; padding-top:6px; font-size:10px; color:#aaa; }
     .wo-footer { text-align:center; margin-top:16px; font-size:10px; color:#999; border-top:1px solid #ccc; padding-top:8px; }
   }
+
+  /* ── OCR 모달 ── */
+  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px; }
+  .modal-box { background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:22px;width:min(440px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.6); }
+  .modal-title { font-size:15px;font-weight:700;margin-bottom:16px;color:var(--green);display:flex;align-items:center;gap:8px; }
+  .ocr-drop-zone { border:2px dashed var(--border2);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;color:var(--text-mute);font-size:12px;transition:border-color .2s,background .2s;user-select:none; }
+  .ocr-drop-zone:hover,.ocr-drop-zone.drag-over { border-color:var(--green-dim);background:rgba(74,222,128,.04); }
+  .ocr-table { width:100%;border-collapse:collapse;font-size:12px;margin-top:4px; }
+  .ocr-table th,.ocr-table td { padding:6px 8px;border:1px solid var(--border);text-align:center; }
+  .ocr-table th { background:var(--bg3);font-weight:600;color:var(--text-dim); }
+  .ocr-table td { color:var(--text); }
+  .ocr-table input[type=checkbox] { accent-color:var(--green);width:15px;height:15px;cursor:pointer; }
+  .ocr-result-label { font-size:11px;font-weight:600;margin-bottom:6px;color:var(--text-mute); }
+  .ocr-spinner { display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .btn-outline { background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-size:11px;padding:5px 12px;border-radius:7px;cursor:pointer;font-family:var(--sans); }
+  .btn-outline:hover { border-color:var(--green-dim);color:var(--green); }
 </style>
 </head>
 <body>
@@ -433,7 +450,7 @@
     <div class="form-grid" style="grid-template-columns:repeat(6,1fr);gap:10px;">
       <div class="fg">
         <label class="fl">본체 시접 <span class="unit">mm</span></label>
-        <input type="number" id="seam_body" value="20" oninput="calc()">
+        <input type="number" id="seam_body" value="25" oninput="calc()">
       </div>
       <div class="fg">
         <label class="fl">상부 스냅링 <span class="unit">mm</span></label>
@@ -468,8 +485,7 @@
       <div>
         <label class="fl" style="margin-bottom:5px;">본체 시접 선택</label>
         <div class="quick-btns" style="margin-bottom:0">
-          <div class="qbtn active" onclick="setVal('seam_body',this,20)">20</div>
-          <div class="qbtn" onclick="setVal('seam_body',this,25)">25</div>
+          <div class="qbtn active" onclick="setVal('seam_body',this,25)">25</div>
           <div class="qbtn" onclick="setVal('seam_body',this,30)">30</div>
         </div>
       </div>
@@ -490,6 +506,9 @@
       <div class="step-badge">02</div>
       <div class="card-title">제품 목록</div>
       <div class="card-desc" id="prod-count-badge">0개 제품</div>
+      <button class="btn-outline" onclick="openOcrModal()" style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+        📷 발주서 불러오기
+      </button>
     </div>
 
     <div class="product-table-wrap">
@@ -622,6 +641,47 @@
     <div class="wo-sign-box"><div class="wo-sign-label">확인</div><div class="wo-sign-line">서명</div></div>
   </div>
   <div class="wo-footer">서진필터 재단 계산기 v3 · 출력일: <span id="wo-print-date"></span></div>
+</div>
+
+<!-- 발주서 AI 인식 모달 -->
+<div id="ocr-modal" style="display:none;" class="modal-overlay" onclick="if(event.target===this)closeOcrModal()">
+  <div class="modal-box">
+    <div class="modal-title">📷 발주서 자동 인식 <span style="font-size:10px;color:var(--text-mute);font-weight:400">(Claude AI)</span></div>
+
+    <!-- API 키 -->
+    <div class="fg" style="margin-bottom:12px;">
+      <label class="fl">Anthropic API 키 <span class="unit">최초 1회 입력 후 저장됨</span></label>
+      <input type="password" id="ocr-apikey" placeholder="sk-ant-..." style="font-size:11px;letter-spacing:.05em;">
+    </div>
+
+    <!-- 이미지 업로드 -->
+    <div id="ocr-drop" class="ocr-drop-zone"
+      onclick="document.getElementById('ocr-file').click()"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="onOcrDrop(event)">
+      <div id="ocr-drop-text">📂 클릭하거나 발주서 사진을 여기에 끌어다 놓기<br><span style="font-size:10px;opacity:.6;margin-top:4px;display:block">JPG · PNG · HEIC 지원</span></div>
+      <img id="ocr-preview" style="display:none;max-width:100%;max-height:200px;border-radius:8px;margin-top:10px;object-fit:contain;">
+      <input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="onOcrFileSelect(event)">
+    </div>
+
+    <!-- 분석 버튼 -->
+    <button class="btn btn-green" id="ocr-analyze-btn" onclick="runOcrAnalysis()" style="width:100%;margin:12px 0 8px;">
+      🔍 AI 분석
+    </button>
+
+    <!-- 추출 결과 -->
+    <div id="ocr-result" style="display:none;">
+      <div class="ocr-result-label">추출된 제품 목록 — 적용할 항목을 선택하세요</div>
+      <table class="ocr-table">
+        <thead><tr><th>✓</th><th>링치수 Ø</th><th>길이 L (mm)</th><th>수량 (EA)</th></tr></thead>
+        <tbody id="ocr-tbody"></tbody>
+      </table>
+      <button class="btn btn-blue" onclick="applyOcrResult()" style="width:100%;margin-top:10px;">✅ 선택 항목 적용</button>
+    </div>
+
+    <button class="btn" onclick="closeOcrModal()" style="width:100%;margin-top:8px;background:var(--bg3);color:var(--text-dim);">닫기</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1198,7 +1258,7 @@ function resetAll() {
 
   // 공통 설정값 초기화
   document.getElementById('fabric_w').value   = '2150';
-  document.getElementById('seam_body').value  = '20';
+  document.getElementById('seam_body').value  = '25';
   document.getElementById('seam_snap').value  = '100';
   document.getElementById('seam_hem').value   = '0';
   document.getElementById('tape_w').value     = '67';
@@ -1228,6 +1288,134 @@ function resetAll() {
   calcOnly();
   renderProfiles();
   showToast('🔄 초기화 완료');
+}
+
+// ── 발주서 AI 인식 ────────────────────────────────
+let ocrImageBase64 = null;
+let ocrImageType   = 'image/jpeg';
+
+function openOcrModal() {
+  const saved = localStorage.getItem('sjfilter_apikey');
+  if (saved) document.getElementById('ocr-apikey').value = saved;
+  document.getElementById('ocr-result').style.display = 'none';
+  document.getElementById('ocr-modal').style.display  = 'flex';
+}
+
+function closeOcrModal() {
+  document.getElementById('ocr-modal').style.display = 'none';
+}
+
+function onOcrFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  loadOcrFile(file);
+}
+
+function onOcrDrop(e) {
+  e.preventDefault();
+  document.getElementById('ocr-drop').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) { showToast('⚠️ 이미지 파일만 지원합니다'); return; }
+  loadOcrFile(file);
+}
+
+function loadOcrFile(file) {
+  ocrImageType = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+    ocrImageBase64 = dataUrl.split(',')[1];
+    const img = document.getElementById('ocr-preview');
+    img.src = dataUrl; img.style.display = 'block';
+    document.getElementById('ocr-drop-text').style.display = 'none';
+    document.getElementById('ocr-result').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runOcrAnalysis() {
+  const apiKey = document.getElementById('ocr-apikey').value.trim();
+  if (!apiKey)         { showToast('⚠️ API 키를 입력하세요'); return; }
+  if (!ocrImageBase64) { showToast('⚠️ 이미지를 먼저 선택하세요'); return; }
+  localStorage.setItem('sjfilter_apikey', apiKey);
+
+  const btn = document.getElementById('ocr-analyze-btn');
+  btn.innerHTML = '<span class="ocr-spinner"></span>AI 분석 중...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: ocrImageType, data: ocrImageBase64 }},
+          { type: 'text', text: `이 발주서 이미지에서 백필터(bag filter) 제품 목록을 추출하세요.
+각 제품의 정보:
+- ring: 타공홀 지름(Ø) 숫자값 (예: Ø160 → 160, Ø142.5 → 142.5)
+- length: 총길이(L) mm 숫자값만 (예: 3200L → 3200, 2475L → 2475)
+- qty: 수량(EA) 숫자값만 (예: 63EA → 63, 30EA → 30)
+
+JSON 배열 형식으로만 응답하세요. 다른 설명 없이.
+예시: [{"ring":160,"length":3200,"qty":63},{"ring":158,"length":2450,"qty":70}]` }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
+    const text = data.content[0].text.trim();
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('JSON 형식 응답을 받지 못했습니다');
+    const items = JSON.parse(match[0]);
+    if (!items.length) throw new Error('추출된 제품이 없습니다');
+    renderOcrResult(items);
+  } catch(err) {
+    showToast('❌ ' + err.message);
+  } finally {
+    btn.innerHTML = '🔍 AI 분석';
+    btn.disabled = false;
+  }
+}
+
+function renderOcrResult(items) {
+  document.getElementById('ocr-result').style.display = 'block';
+  document.getElementById('ocr-tbody').innerHTML = items.map((item, i) => `
+    <tr>
+      <td><input type="checkbox" checked data-idx="${i}"></td>
+      <td>${item.ring}</td>
+      <td>${item.length.toLocaleString()}</td>
+      <td>${item.qty}</td>
+    </tr>`).join('');
+  document.getElementById('ocr-tbody')._items = items;
+}
+
+function applyOcrResult() {
+  const tbody  = document.getElementById('ocr-tbody');
+  const items  = tbody._items;
+  const checks = tbody.querySelectorAll('input[type=checkbox]');
+  let added = 0;
+  checks.forEach(cb => {
+    if (cb.checked) {
+      const item = items[parseInt(cb.dataset.idx)];
+      products.push({ id: Date.now() + added, ring: item.ring, length: item.length, qty: item.qty, h: '' });
+      added++;
+    }
+  });
+  if (added > 0) {
+    closeOcrModal();
+    renderTableStructure();
+    calcOnly();
+    showToast(`✅ ${added}개 제품이 추가되었습니다`);
+  } else {
+    showToast('⚠️ 적용할 항목을 선택하세요');
+  }
 }
 
 // ── 토스트 ───────────────────────────────────────
