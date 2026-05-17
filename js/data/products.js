@@ -223,6 +223,24 @@ var PRODUCTS = [
 
   /* ===== 수처리필터 ===== */
   {
+    id: 'wf-mesh-01',
+    category: 'water',
+    categoryLabel: '수처리필터',
+    name: '메쉬망 필터 (Mesh Filter)',
+    image: 'images/products/parts-mesh.jpg',
+    icon: '🕸️',
+    summary: '자체 생산 라인에서 직접 제작. 약 100μm 미세 입자까지 여과 가능. 세척 후 반복 사용이 가능해 액체 배관 전처리에 경제적입니다.',
+    specs: {
+      '메쉬 규격': '150 Mesh (약 100μm 여과)',
+      '소재': '폴리에스터 모노필라멘트',
+      '특징': '세척 후 반복 사용 가능, 균일한 직조 구조',
+      '생산 방식': '자체 생산',
+      '커스텀': '규격 맞춤 제작 가능',
+      '용도': '식품·화학·도료·액체 전처리·분체 공정'
+    },
+    industries: ['식품', '화학', '도료', '분체', '제약']
+  },
+  {
     id: 'wf-strainer-01',
     category: 'water',
     categoryLabel: '수처리필터',
@@ -279,76 +297,22 @@ var PRODUCTS = [
 
   /* ===== 집진기 부품 ===== */
   {
-    id: 'parts-bag-poly-01',
+    id: 'parts-venturi-01',
     category: 'parts',
     categoryLabel: '집진기 부품',
-    name: '폴리에스터 필터백',
-    image: 'images/products/parts-bag-poly.jpg',
-    icon: '🧵',
-    summary: '가장 범용적인 필터백. 내산성·내알칼리성 우수, 경제적 비용으로 안정적 성능.',
+    name: '벤투리 (Venturi)',
+    image: 'images/products/parts-venturi.jpg',
+    icon: '💨',
+    summary: '펄스 제트 방식 탈진 시 압축공기를 필터백에 균일하게 분사하는 탈진 노즐. 탈진 효율에 직결되는 핵심 부품.',
     specs: {
-      '재질': 'Polyester Felt',
-      '최고 사용 온도': '130°C (연속), 150°C (순간)',
-      '포집 효율': '99.5% 이상',
-      '표면 처리': '소결(Singeing), 캘린더링(Calendering) 가능',
-      '규격': '직경 120~160mm, 길이 2~6m (주문 제작)',
-      '생산': '외주 없이 자체 생산'
+      '적용': '펄스 제트 백필터 탈진 시스템',
+      '재질': 'Aluminum, Carbon Steel, SUS304 선택',
+      '규격': '직경 120~160mm (필터백 규격 맞춤)',
+      '특징': '균일한 공기 분사로 탈진 효율 극대화',
+      '커스텀': '비표준 규격 맞춤 제작 가능',
+      '출고': '주요 규격 상시 재고, 맞춤 제작 별도 협의'
     },
-    industries: ['식품', '목재', '금속', '일반 제조']
-  },
-  {
-    id: 'parts-bag-ptfe-01',
-    category: 'parts',
-    categoryLabel: '집진기 부품',
-    name: 'PTFE 필터백',
-    image: 'images/products/parts-bag-ptfe.jpg',
-    icon: '⚙️',
-    summary: '고온·고습·부식성 가스 환경 최적화. 포집 효율 99.99% 이상의 프리미엄 필터백.',
-    specs: {
-      '재질': 'PTFE Membrane + Polyester/Glass 기포',
-      '최고 사용 온도': '260°C (연속)',
-      '포집 효율': '99.99% 이상',
-      '내화학성': '산·알칼리·용제 탁월한 내구성',
-      '규격': '직경 120~160mm, 길이 2~6m (주문 제작)',
-      '생산': '외주 없이 자체 생산'
-    },
-    industries: ['화학', '발전', '제약', '반도체', '소각']
-  },
-  {
-    id: 'parts-bag-nomex-01',
-    category: 'parts',
-    categoryLabel: '집진기 부품',
-    name: '노멕스 필터백',
-    image: 'images/products/parts-bag-nomex.jpg',
-    icon: '🔥',
-    summary: '200°C 이상 고온 연속 운전 가능. 철강·시멘트 킬른 등 혹독한 환경에 특화.',
-    specs: {
-      '재질': 'Nomex (Meta-Aramid)',
-      '최고 사용 온도': '200°C (연속), 220°C (순간)',
-      '포집 효율': '99.5% 이상',
-      '내열성': '탁월한 고온 치수 안정성',
-      '규격': '직경 120~160mm, 길이 2~6m (주문 제작)',
-      '생산': '외주 없이 자체 생산'
-    },
-    industries: ['시멘트', '철강', '유리', '도자기']
-  },
-  {
-    id: 'parts-mesh-01',
-    category: 'parts',
-    categoryLabel: '집진기 부품',
-    name: '메쉬망 150 필터',
-    image: 'images/products/parts-mesh.jpg',
-    icon: '🕸️',
-    summary: '자체 생산 라인에서 직접 제작. 약 100μm 미세 입자까지 여과 가능.',
-    specs: {
-      '메쉬 규격': '150 Mesh (약 100μm 여과)',
-      '소재': '폴리에스터 모노필라멘트',
-      '특징': '세척 후 반복 사용 가능, 균일한 직조 구조',
-      '생산 방식': '외주 없이 자체 생산',
-      '커스텀': '규격 맞춤 제작 가능',
-      '용도': '식품·화학·도료·집진 전처리·분체 공정'
-    },
-    industries: ['식품', '화학', '도료', '분체', '제약']
+    industries: ['철강', '시멘트', '화학', '발전', '전 산업군']
   },
   {
     id: 'parts-cage-01',
