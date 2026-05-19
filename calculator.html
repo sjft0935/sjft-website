@@ -174,6 +174,7 @@
   .total-label { color: var(--text-dim); font-size: 11px; font-weight: 700; text-align: right; padding-right: 8px; }
   .total-val   { color: var(--green); font-size: 15px; font-weight: 700; }
   .total-val.amber { color: var(--amber); }
+  .total-final-row td { background: rgba(217,119,6,0.07) !important; border-top: 2px solid var(--amber) !important; }
 
   .add-row-btn {
     width: 100%; padding: 10px; background: var(--bg3); border: 1.5px dashed var(--border2);
@@ -585,40 +586,6 @@
     <div id="cut-diagram-svg" style="overflow-x:auto;margin-top:8px;"></div>
   </div>
 
-  <!-- 총합 카드 -->
-  <div class="summary-card">
-    <div class="sum-big-label">▸ 전체 원단 총량 합계</div>
-    <div>
-      <span class="sum-big-val" id="sum-total">—</span>
-      <span class="sum-big-unit"> M</span>
-    </div>
-    <div class="sum-big-sub" id="sum-sub">제품을 추가하고 규격을 입력해 주세요</div>
-    <div class="roll-bar" id="roll-bar" style="display:none;">
-      🧵 롤 수 : <strong id="sum-rolls">—</strong> 롤
-      <span style="color:var(--text-mute)">· 롤당 <span id="sum-roll-len">100</span>m 기준</span>
-    </div>
-
-    <!-- 제품별 결과 목록 -->
-    <div class="prod-result-list" id="prod-result-list"></div>
-  </div>
-
-  <!-- 재단 규격 카드 -->
-  <div class="cut-spec-card" id="cut-spec-card" style="display:none;">
-    <div class="cut-spec-title">📐 제품별 재단 규격</div>
-    <table class="cut-spec-table">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>링치수</th>
-          <th class="w-col">재단 폭<br><span style="font-weight:400">(mm)</span></th>
-          <th>장수</th>
-          <th class="l-col">재단치수길이<br><span style="font-weight:400">필터+스냅+덧단</span></th>
-        </tr>
-      </thead>
-      <tbody id="cut-spec-tbody"></tbody>
-    </table>
-  </div>
-
   <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사</button>
   <button class="btn btn-blue"    onclick="printWorkOrder()">🖨️ 작업 지시서 인쇄</button>
   <button class="btn btn-ghost"   onclick="resetAll()">🔄 초기화</button>
@@ -847,19 +814,26 @@ function renderTfoot(results) {
   const tfoot = document.getElementById('prod-tfoot');
   const valid = results.filter(e => e.r);
   if (!valid.length) { tfoot.innerHTML = ''; return; }
-  const grandM  = valid.reduce((a, e) => a + e.r.totalM, 0);
-  const grandMg = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const grandM   = valid.reduce((a, e) => a + e.r.totalM,       0);
+  const grandMg  = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
   const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
-  const mg = getShared().margin;
+  const s   = getShared();
+  const rolls = s.rollLen > 0 ? Math.ceil(grandMg / s.rollLen) : null;
+  const rollTxt = rolls
+    ? `<span style="color:var(--blue);font-weight:600;font-size:10px;margin-left:10px;">🧵 ${rolls}롤 (${s.rollLen}m 기준)</span>`
+    : '';
   tfoot.innerHTML = `
     <tr class="total-row">
-      <td colspan="6" class="total-label">합계 (${valid.length}종 · ${totalQty}개)</td>
-      <td colspan="3" class="total-label" style="text-align:center;">순수 합계</td>
+      <td colspan="6" class="total-label">합계 ${valid.length}종 · ${totalQty}개</td>
+      <td colspan="3" class="total-label" style="text-align:right;padding-right:8px;">순수 원단</td>
       <td class="total-val">${grandM.toFixed(2)} M</td><td></td>
     </tr>
-    <tr class="total-row">
-      <td colspan="9" class="total-label">여유(${mg}%) 포함 최종 발주량</td>
-      <td class="total-val amber">${grandMg.toFixed(2)} M</td><td></td>
+    <tr class="total-row total-final-row">
+      <td colspan="9" class="total-label" style="font-size:11px;padding:10px 8px;">
+        ✅ 최종 발주량 (여유 ${s.margin}% 포함)${rollTxt}
+      </td>
+      <td class="total-val amber" style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">${grandMg.toFixed(2)} M</td>
+      <td></td>
     </tr>`;
 }
 
@@ -870,12 +844,6 @@ function calcOnly() {
 
   updateTableResults(results);
   renderTfoot(results);
-  renderSummary(results, s);
-
-  // 시각화
-  let fe = results.find(e => e.p.id === focusId && e.r) || results.find(e => e.r);
-  if (fe) renderVis(fe.r.pcsPerRow, fe.r.needW, s.fabricW, fe.r.remainW, fe.r.tapePerRow, s.tapeW, results.indexOf(fe)+1);
-  else    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
 
   // 경고
   const alerts = [];
@@ -892,27 +860,11 @@ function calcOnly() {
   document.getElementById('prod-count-badge').textContent =
     `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
 
-  // 롤 수 계산
-  const validRes = results.filter(e => e.r);
-  const grandMgTotal = validRes.reduce((a, e) => a + e.r.totalMMargin, 0);
-  const rollBar = document.getElementById('roll-bar');
-  if (validRes.length > 0 && s.rollLen > 0) {
-    const rolls = Math.ceil(grandMgTotal / s.rollLen);
-    document.getElementById('sum-rolls').textContent = rolls;
-    document.getElementById('sum-roll-len').textContent = s.rollLen;
-    rollBar.style.display = 'flex';
-  } else {
-    rollBar.style.display = 'none';
-  }
-
   // 재단 순서 추천
   renderCuttingOrder(results, s);
 
   // 재단 평면도
   renderCutDiagram(results, s);
-
-  // 재단 규격 카드
-  renderCutSpec(results);
 }
 
 // ── 재단 규격 카드 ───────────────────────────────
