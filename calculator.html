@@ -391,6 +391,7 @@
     .wo-sign-label { font-size:10px; color:#888; margin-bottom:20px; }
     .wo-sign-line  { border-top:1px solid #ccc; padding-top:6px; font-size:10px; color:#aaa; }
     .wo-footer { text-align:center; margin-top:16px; font-size:10px; color:#999; border-top:1px solid #ccc; padding-top:8px; }
+    #wo-diagram svg { width:100% !important; max-width:100% !important; height:auto !important; }
   }
 
   /* ── OCR 모달 ── */
@@ -574,6 +575,16 @@
     <div class="order-list" id="order-list"></div>
   </div>
 
+  <!-- 재단 평면도 -->
+  <div class="order-card" id="cut-diagram-card" style="display:none;">
+    <div class="order-title" style="display:flex;align-items:center;gap:6px;">
+      📐 재단 평면도
+      <span style="color:var(--text-mute);font-size:9px;">원단 폭 기준 실제 배치</span>
+      <span id="cut-diagram-scale" style="color:var(--text-mute);font-size:9px;margin-left:auto;"></span>
+    </div>
+    <div id="cut-diagram-svg" style="overflow-x:auto;margin-top:8px;"></div>
+  </div>
+
   <!-- 총합 카드 -->
   <div class="summary-card">
     <div class="sum-big-label">▸ 전체 원단 총량 합계</div>
@@ -639,6 +650,8 @@
   </table>
   <div class="wo-section-title">재단 순서 추천</div>
   <div id="wo-order"></div>
+  <div class="wo-section-title">재단 평면도</div>
+  <div id="wo-diagram"></div>
   <div class="wo-sign">
     <div class="wo-sign-box"><div class="wo-sign-label">작업 지시</div><div class="wo-sign-line">서명</div></div>
     <div class="wo-sign-box"><div class="wo-sign-label">재단 담당</div><div class="wo-sign-line">서명</div></div>
@@ -895,6 +908,9 @@ function calcOnly() {
   // 재단 순서 추천
   renderCuttingOrder(results, s);
 
+  // 재단 평면도
+  renderCutDiagram(results, s);
+
   // 재단 규격 카드
   renderCutSpec(results);
 }
@@ -967,6 +983,87 @@ function renderCuttingOrder(results, s) {
   document.getElementById('order-list').innerHTML = html;
 }
 
+// ── 재단 평면도 SVG ──────────────────────────────
+function renderCutDiagram(results, s) {
+  const card = document.getElementById('cut-diagram-card');
+  const valid = results.filter(e => e.r && e.r.pcsPerRow > 0);
+  if (!valid.length || s.fabricW <= 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  // 재단 순서(needW 내림차순) 정렬
+  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
+
+  const SVG_W  = 560;
+  const scaleX = SVG_W / s.fabricW;               // mm → px (X축)
+
+  // Y축 스케일: 전체 컷 길이(mm)에서 최대 높이 520px
+  const totalCutMM = sorted.reduce((a, e) => a + e.r.cutLen * e.r.rows, 0);
+  const scaleY = Math.min(520 / Math.max(totalCutMM, 1), 0.3); // px/mm, 최대 0.3
+
+  // 색상 팔레트 (라이트 테마 5색)
+  const PALETTE = [
+    { fill:'#DCFCE7', stroke:'#16A34A', text:'#14532D' },
+    { fill:'#DBEAFE', stroke:'#2563EB', text:'#1E40AF' },
+    { fill:'#FEF9C3', stroke:'#CA8A04', text:'#713F12' },
+    { fill:'#FCE7F3', stroke:'#DB2777', text:'#831843' },
+    { fill:'#F3E8FF', stroke:'#9333EA', text:'#581C87' },
+  ];
+
+  // 각 구간(band) 계산
+  let curY = 0;
+  const bands = sorted.map((e, i) => {
+    const bandH = Math.max(e.r.cutLen * e.r.rows * scaleY, 32);
+    const b = { e, y: curY, h: bandH, color: PALETTE[i % PALETTE.length] };
+    curY += bandH;
+    return b;
+  });
+  const svgH = curY + 1;
+
+  // 각 band SVG 조각 생성
+  const bandsSvg = bands.map(({ e, y, h, color }) => {
+    const { r, p } = e;
+    const usedW  = r.pcsPerRow * r.needW * scaleX;   // 실제 사용 폭(px)
+    const wasteW = SVG_W - usedW;                     // 낭비 폭(px)
+    const midY   = y + h / 2;
+    const fs     = Math.min(11, h * 0.32);            // 폰트 크기
+
+    // 취수 구분선 (세로 점선)
+    const dividers = Array.from({ length: r.pcsPerRow - 1 }, (_, j) =>
+      `<line x1="${(j+1)*r.needW*scaleX}" y1="${y}" x2="${(j+1)*r.needW*scaleX}" y2="${y+h}" stroke="${color.stroke}" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.7"/>`
+    ).join('');
+
+    // 수량/길이 레이블 (좌측 상단)
+    const mLabel = `${(r.cutLen * r.rows / 1000).toFixed(2)}M`;
+
+    // 잔여폭 텍스트 (폭이 충분할 때만)
+    const wasteLabel = wasteW > 36
+      ? `<text x="${usedW + wasteW/2}" y="${midY - 5}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#94A3B8">낭비</text>
+         <text x="${usedW + wasteW/2}" y="${midY + 7}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#94A3B8">${Math.round(r.remainW)}mm</text>`
+      : '';
+
+    return `
+      <rect x="0" y="${y}" width="${usedW}" height="${h}" fill="${color.fill}" stroke="${color.stroke}" stroke-width="1.2"/>
+      ${wasteW > 2 ? `<rect x="${usedW}" y="${y}" width="${wasteW}" height="${h}" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="0.8" stroke-dasharray="5,4"/>` : ''}
+      ${dividers}
+      <text x="${usedW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${p.length}L · ${r.pcsPerRow}개/폭 · ${r.rows}장</text>
+      ${wasteLabel}
+      <text x="3" y="${y + 11}" font-size="8" fill="${color.text}" opacity="0.65">${mLabel}</text>
+    `;
+  }).join('');
+
+  // 상단 폭 표시선
+  const topRule = `
+    <line x1="0" y1="0" x2="${SVG_W}" y2="0" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="${SVG_W/2}" y="-5" text-anchor="middle" font-size="10" fill="#64748B" font-style="italic">← 원단 폭 ${s.fabricW}mm →</text>
+  `;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 -16 ${SVG_W} ${svgH+18}" style="display:block;border:1px solid #E2E8F0;border-radius:8px;background:#fff;">${topRule}${bandsSvg}</svg>`;
+
+  document.getElementById('cut-diagram-svg').innerHTML = svg;
+  document.getElementById('cut-diagram-scale').textContent =
+    `축척 약 1:${Math.round(1 / Math.max(scaleY, 0.001))} (Y축)`;
+}
+
 // ── 작업 지시서 인쇄 ─────────────────────────────
 function printWorkOrder() {
   const s = getShared();
@@ -1016,6 +1113,10 @@ function printWorkOrder() {
   }).join('');
   document.getElementById('wo-order').innerHTML =
     `<table class="wo-table"><thead><tr><th>순서</th><th>규격</th><th>필요폭(mm)</th><th>장수</th><th>비고</th></tr></thead><tbody>${orderRows}</tbody></table>`;
+
+  // 평면도 SVG 복사
+  const diagSvg = document.getElementById('cut-diagram-svg').innerHTML;
+  document.getElementById('wo-diagram').innerHTML = diagSvg || '';
 
   window.print();
 }
