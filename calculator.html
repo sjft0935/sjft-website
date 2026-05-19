@@ -945,8 +945,8 @@ function renderCutDiagram(results, s) {
   if (!valid.length || s.fabricW <= 0) { card.style.display = 'none'; return; }
   card.style.display = 'block';
 
-  // 재단 순서(needW 내림차순) 정렬
-  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
+  // 수량 내림차순 정렬 (많은 수량 → 위, 적은 수량 → 아래)
+  const sorted = [...valid].sort((a, b) => b.r.qty - a.r.qty);
 
   const SVG_W  = 560;
   const CAP_H  = 18;                               // 캡션 바 높이(px)
