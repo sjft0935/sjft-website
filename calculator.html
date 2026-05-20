@@ -810,7 +810,7 @@ function renderTfoot(results) {
   if (!valid.length) { tfoot.innerHTML = ''; return; }
   const grandM        = valid.reduce((a, e) => a + e.r.totalM,       0);
   const grandMg       = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
-  const grandTotalMm  = valid.reduce((a, e) => a + e.r.totalMm,      0);
+  const sumCutLen     = valid.reduce((a, e) => a + e.r.cutLen,        0);
   const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
   const s       = getShared();
   const sumRows = valid.reduce((a, e) => a + e.r.rows, 0);
@@ -821,7 +821,7 @@ function renderTfoot(results) {
   tfoot.innerHTML = `
     <tr class="total-row">
       <td colspan="7" class="total-label">합계 ${valid.length}종 · ${totalQty}개 · 총 ${sumRows}장</td>
-      <td class="total-val" style="color:var(--green-dim);font-size:12px;text-align:center;">${(grandTotalMm/1000).toFixed(2)}m</td>
+      <td class="total-val" style="color:var(--green-dim);font-size:12px;text-align:center;">${sumCutLen.toLocaleString()}</td>
       <td></td>
       <td class="total-val" style="text-align:right;">${grandM.toFixed(2)}<span style="font-size:9px;font-weight:600;margin-left:2px">M</span></td><td></td>
     </tr>
