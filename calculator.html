@@ -1051,9 +1051,10 @@ function printWorkOrder() {
   document.getElementById('wo-date').textContent = dateStr;
   document.getElementById('wo-print-date').textContent = dateStr;
 
-  const grandM   = valid.reduce((a, e) => a + e.r.totalM, 0);
-  const grandMg  = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
-  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
+  const grandM    = valid.reduce((a, e) => a + e.r.totalM, 0);
+  const grandMg   = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const totalQty  = valid.reduce((a, e) => a + e.r.qty, 0);
+  const sumCutLen = valid.reduce((a, e) => a + e.r.cutLen, 0);
   const rolls = s.rollLen > 0 ? Math.ceil(grandMg / s.rollLen) : '—';
 
   document.getElementById('wo-tbody').innerHTML = valid.map(({ p, r }, i) => `
@@ -1071,9 +1072,11 @@ function printWorkOrder() {
 
   document.getElementById('wo-tfoot').innerHTML = `
     <tr class="wo-total-row">
-      <td colspan="3">합계 ${valid.length}종 · ${totalQty}개</td>
-      <td colspan="3">순수: ${grandM.toFixed(2)}M</td>
-      <td colspan="3">발주량: ${grandMg.toFixed(2)}M (${rolls}롤)</td>
+      <td colspan="4">합계 ${valid.length}종 · ${totalQty}개</td>
+      <td colspan="2">순수 ${grandM.toFixed(2)}M</td>
+      <td></td>
+      <td style="text-align:center;">${sumCutLen.toLocaleString()}mm</td>
+      <td>발주량 ${grandMg.toFixed(2)}M (${rolls}롤)</td>
     </tr>`;
 
 
