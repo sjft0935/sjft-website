@@ -1009,7 +1009,9 @@ function renderCutDiagram(results, s) {
     // ⑤ 메인 라벨 (필터 구역 중앙) — 치수 텍스트만 크게, 링테이프는 별도 유지
     const fs = Math.max(12, Math.min(15, drawH * 0.32));
     const rowsTxt = r.partialPcs > 0 ? `${r.rows}장+${r.partialPcs}개` : `${r.rows}장`;
-    const mainLabel = `<text x="${filterW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${p.length}L · ${r.pcsPerRow}개/폭 · ${rowsTxt}</text>`;
+    const mainLabel = `
+      <text x="${filterW/2}" y="${midY - fs * 0.65}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${p.length}L</text>
+      <text x="${filterW/2}" y="${midY + fs * 0.65}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(10, fs * 0.85)}" fill="${color.text}" font-weight="600">${r.pcsPerRow}개/${rowsTxt}</text>`;
 
     // ⑥ 캡션 바 — 기존 vis-labels 정보 통합
     const usedMm   = r.pcsPerRow * r.needW + r.tapePerRow * s.tapeW;
