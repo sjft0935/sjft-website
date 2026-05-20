@@ -229,13 +229,6 @@
   .pri-val { font-size: 15px; font-weight: 700; font-family: var(--mono); color: var(--green); text-align: right; }
   .pri-val .sub { font-size: 10px; color: var(--text-mute); font-weight: 400; }
 
-  /* 경고 */
-  .alert-box {
-    background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.25);
-    border-radius: 8px; padding: 10px 12px; font-size: 11px; color: var(--amber);
-    margin-bottom: 12px; display: none; font-family: var(--mono); line-height: 1.7; white-space: pre-line;
-  }
-  .alert-box.show { display: block; }
 
   /* 버튼 */
   .btn {
@@ -569,7 +562,6 @@
   </div>
 
   <!-- 경고 -->
-  <div class="alert-box" id="alert-box"></div>
 
   <!-- 재단 순서 추천 -->
   <div class="order-card" id="order-card" style="display:none;">
@@ -850,16 +842,6 @@ function calcOnly() {
   updateTableResults(results);
   renderTfoot(results);
 
-  // 경고
-  const alerts = [];
-  results.forEach(({ p, r }, i) => {
-    if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
-    if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
-  });
-  if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
-  const alertEl = document.getElementById('alert-box');
-  alertEl.textContent = alerts.join('\n');
-  alertEl.classList.toggle('show', alerts.length > 0);
 
   // 뱃지
   document.getElementById('prod-count-badge').textContent =
