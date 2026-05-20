@@ -796,7 +796,7 @@ function updateTableResults(results) {
     if (r) {
       pEl.textContent  = r.pcsPerRow;               pEl.className  = 'tbl-res';
       tlEl.textContent = r.cutLen.toLocaleString();  tlEl.className = 'tbl-res';
-      rEl.textContent  = r.partialPcs > 0 ? `${r.rows}장 / ${r.partialPcs}개` : `${r.rows}장`;
+      rEl.textContent  = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
       rEl.className    = r.partialPcs > 0 ? 'tbl-res tbl-res-partial' : 'tbl-res';
       mEl.textContent  = r.totalMMargin.toFixed(2); mEl.className  = 'tbl-res amber';
     } else {
@@ -816,8 +816,9 @@ function renderTfoot(results) {
   const tfoot = document.getElementById('prod-tfoot');
   const valid = results.filter(e => e.r);
   if (!valid.length) { tfoot.innerHTML = ''; return; }
-  const grandM   = valid.reduce((a, e) => a + e.r.totalM,       0);
-  const grandMg  = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const grandM        = valid.reduce((a, e) => a + e.r.totalM,       0);
+  const grandMg       = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const sumCutLen     = valid.reduce((a, e) => a + e.r.cutLen,        0);
   const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
   const s       = getShared();
   const sumRows = valid.reduce((a, e) => a + e.r.rows, 0);
@@ -827,15 +828,16 @@ function renderTfoot(results) {
     : '';
   tfoot.innerHTML = `
     <tr class="total-row">
-      <td colspan="6" class="total-label">합계 ${valid.length}종 · ${totalQty}개 · 총 ${sumRows}장</td>
-      <td colspan="3" class="total-label" style="text-align:right;padding-right:8px;">순수 원단</td>
-      <td class="total-val" style="text-align:right;">${grandM.toFixed(2)} M</td><td></td>
+      <td colspan="7" class="total-label">합계 ${valid.length}종 · ${totalQty}개 · 총 ${sumRows}장</td>
+      <td class="total-val" style="color:var(--green-dim);font-size:12px;text-align:center;">${sumCutLen.toLocaleString()}</td>
+      <td></td>
+      <td class="total-val" style="text-align:right;">${grandM.toFixed(2)}<span style="font-size:9px;font-weight:600;margin-left:2px">M</span></td><td></td>
     </tr>
     <tr class="total-row total-final-row">
       <td colspan="9" class="total-label" style="font-size:11px;padding:10px 8px;">
         ✅ 최종 발주량 (여유 ${s.margin}% 포함)${rollTxt}
       </td>
-      <td class="total-val amber" style="font-size:13px;font-weight:800;text-align:right;">${grandMg.toFixed(2)} M</td>
+      <td class="total-val amber" style="font-size:13px;font-weight:800;text-align:right;">${grandMg.toFixed(2)}<span style="font-size:9px;font-weight:600;margin-left:2px">M</span></td>
       <td></td>
     </tr>`;
 }
@@ -926,7 +928,7 @@ function renderCuttingOrder(results, s) {
       <div class="order-badge">${seq}</div>
       <div class="order-spec">
         <strong>H${p.h||'?'} / 링${p.ring} × ${p.length}L</strong> · ${p.qty}개
-        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.rows}장${r.partialPcs > 0 ? ` <span style="color:var(--amber);font-size:9px;">+${r.partialPcs}개 재고</span>` : ''}
+        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : r.rows}${r.partialPcs > 0 ? ` <span style="color:var(--amber);font-size:9px;">+${r.partialPcs}개 재고</span>` : ''}
         ${isSameGroup ? '<span class="group-tag">동시 재단 가능</span>' : ''}
       </div>
       <div class="order-val">${r.totalMMargin.toFixed(2)}M</div>
@@ -1008,7 +1010,7 @@ function renderCutDiagram(results, s) {
 
     // ⑤ 메인 라벨 (필터 구역 중앙) — 치수 텍스트만 크게, 링테이프는 별도 유지
     const fs = Math.max(12, Math.min(15, drawH * 0.32));
-    const rowsTxt = r.partialPcs > 0 ? `${r.rows}장+${r.partialPcs}개` : `${r.rows}장`;
+    const rowsTxt = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
     const mainLabel = `
       <text x="${filterW/2}" y="${midY - fs * 0.65}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${p.length}L</text>
       <text x="${filterW/2}" y="${midY + fs * 0.65}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(10, fs * 0.85)}" fill="${color.text}" font-weight="600">${r.pcsPerRow}개/${rowsTxt}</text>`;
@@ -1069,7 +1071,7 @@ function printWorkOrder() {
       <td>${p.qty}개</td>
       <td>${Math.round(r.needW)}mm</td>
       <td>${r.pcsPerRow}개/폭</td>
-      <td>${r.partialPcs > 0 ? `${r.rows}장 / ${r.partialPcs}개` : `${r.rows}장`}</td>
+      <td>${r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`}</td>
       <td>${r.cutLen}mm</td>
       <td>${r.totalMMargin.toFixed(2)}M</td>
     </tr>`).join('');
