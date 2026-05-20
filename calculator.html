@@ -995,7 +995,7 @@ function renderCutDiagram(results, s) {
     const fs2 = Math.max(11, Math.min(15, drawH * 0.28));
     const rowsTxt = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
     const mainLabel = `<text text-anchor="middle" dominant-baseline="middle" font-weight="700" fill="${color.text}">
-      <tspan x="${filterW/2}" y="${midY - fs1 * 0.45}" font-size="${fs1}">링${p.ring}×${p.length}L</tspan>
+      <tspan x="${filterW/2}" y="${midY - fs1 * 0.45}" font-size="${fs1}">링${p.ring}×${r.cutLen.toLocaleString()}</tspan>
       <tspan x="${filterW/2}" dy="${fs1 + 4}" font-size="${fs2}">${r.pcsPerRow}개/폭 · ${rowsTxt}</tspan>
     </text>`;
 
