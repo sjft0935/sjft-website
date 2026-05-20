@@ -796,7 +796,7 @@ function updateTableResults(results) {
     if (r) {
       pEl.textContent  = r.pcsPerRow;               pEl.className  = 'tbl-res';
       tlEl.textContent = r.cutLen.toLocaleString();  tlEl.className = 'tbl-res';
-      rEl.textContent  = r.partialPcs > 0 ? `${r.rows}장/1장` : `${r.rows}장`;
+      rEl.textContent  = r.partialPcs > 0 ? `${r.rows}/1장` : `${r.rows}장`;
       rEl.className    = r.partialPcs > 0 ? 'tbl-res tbl-res-partial' : 'tbl-res';
       mEl.textContent  = r.totalMMargin.toFixed(2); mEl.className  = 'tbl-res amber';
     } else {
@@ -928,7 +928,7 @@ function renderCuttingOrder(results, s) {
       <div class="order-badge">${seq}</div>
       <div class="order-spec">
         <strong>H${p.h||'?'} / 링${p.ring} × ${p.length}L</strong> · ${p.qty}개
-        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.partialPcs > 0 ? `${r.rows}장/1장` : `${r.rows}장`}
+        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.partialPcs > 0 ? `${r.rows}/1장` : `${r.rows}장`}
         ${isSameGroup ? '<span class="group-tag">동시 재단 가능</span>' : ''}
       </div>
       <div class="order-val">${r.totalMMargin.toFixed(2)}M</div>
@@ -1011,7 +1011,7 @@ function renderCutDiagram(results, s) {
     // ⑤ 메인 라벨 (필터 구역 중앙) — 규격 크게(2줄), 링테이프 글씨는 별도 유지
     const fs1 = Math.max(15, Math.min(22, drawH * 0.42));
     const fs2 = Math.max(11, Math.min(15, drawH * 0.28));
-    const rowsTxt = r.partialPcs > 0 ? `${r.rows}장/1장` : `${r.rows}장`;
+    const rowsTxt = r.partialPcs > 0 ? `${r.rows}/1장` : `${r.rows}장`;
     const mainLabel = `<text text-anchor="middle" dominant-baseline="middle" font-weight="700" fill="${color.text}">
       <tspan x="${filterW/2}" y="${midY - fs1 * 0.45}" font-size="${fs1}">링${p.ring}×${p.length}L</tspan>
       <tspan x="${filterW/2}" dy="${fs1 + 4}" font-size="${fs2}">${r.pcsPerRow}개/폭 · ${rowsTxt}</tspan>
@@ -1073,7 +1073,7 @@ function printWorkOrder() {
       <td>${p.qty}개</td>
       <td>${Math.round(r.needW)}mm</td>
       <td>${r.pcsPerRow}개/폭</td>
-      <td>${r.partialPcs > 0 ? `${r.rows}장/1장` : `${r.rows}장`}</td>
+      <td>${r.partialPcs > 0 ? `${r.rows}/1장` : `${r.rows}장`}</td>
       <td>${r.cutLen}mm</td>
       <td>${r.totalMMargin.toFixed(2)}M</td>
     </tr>`).join('');
@@ -1088,7 +1088,7 @@ function printWorkOrder() {
   // 재단 순서 테이블 (수량 내림차순)
   const sorted = [...valid].sort((a, b) => b.r.qty - a.r.qty);
   const orderRows = sorted.map(({ p, r }, idx) => {
-    const rowsTxt = r.partialPcs > 0 ? `${r.rows}장/1장` : `${r.rows}장`;
+    const rowsTxt = r.partialPcs > 0 ? `${r.rows}/1장` : `${r.rows}장`;
     return `<tr><td>${idx+1}</td><td>H${p.h||'?'} × ${p.length}L</td><td>${r.needW.toFixed(1)}</td><td>${rowsTxt}</td><td></td></tr>`;
   }).join('');
   document.getElementById('wo-order').innerHTML =
