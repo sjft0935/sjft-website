@@ -1008,17 +1008,31 @@ function renderCutDiagram(results, s) {
          ${wasteW > 32 ? `<text x="${filterW + tapeZW + wasteW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#94A3B8">낭비 ${Math.round(r.remainW - r.tapePerRow * s.tapeW)}mm</text>` : ''}`
       : '';
 
-    // ⑤ 메인 라벨 (필터 구역 중앙) — 치수 텍스트만 크게, 링테이프는 별도 유지
-    const fs = Math.max(12, Math.min(15, drawH * 0.32));
+    // ⑤ 메인 라벨 3줄: 링치수 / 재단길이 분해식 / 취수·장수
+    const fs = Math.max(11, Math.min(14, drawH * 0.28));
     const rowsTxt = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
+    // 재단길이 분해식: 백길이 + 스냅링 [+ 덧단] = cutLen
+    const snapPart = s.snapAdd > 0 ? `+스냅${s.snapAdd}` : '';
+    const hemPart  = s.hemAdd  > 0 ? `+덧단${s.hemAdd}`  : '';
+    const formulaTxt = `${p.length}${snapPart}${hemPart}=${r.cutLen}mm`;
+    const lh = fs * 1.35; // 줄 간격
     const mainLabel = `
-      <text x="${filterW/2}" y="${midY - fs * 0.65}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${p.length}L</text>
-      <text x="${filterW/2}" y="${midY + fs * 0.65}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(10, fs * 0.85)}" fill="${color.text}" font-weight="600">${r.pcsPerRow}개/${rowsTxt}</text>`;
+      <text x="${filterW/2}" y="${midY - lh}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}</text>
+      <text x="${filterW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(9, fs * 0.82)}" fill="${color.text}" font-weight="600">${formulaTxt}</text>
+      <text x="${filterW/2}" y="${midY + lh}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(9, fs * 0.82)}" fill="${color.text}" font-weight="500">${r.pcsPerRow}개/${rowsTxt}장</text>`;
 
-    // ⑥ 캡션 바 — 기존 vis-labels 정보 통합
+    // ⑥ Y축 세로 치수선 (왼쪽) — 재단사가 세로 방향 치수 확인
+    const dimX = -22;
+    const dimLine = `
+      <line x1="${dimX}" y1="${y}" x2="${dimX}" y2="${capY}" stroke="${color.stroke}" stroke-width="0.8" opacity="0.7"/>
+      <line x1="${dimX-5}" y1="${y}"   x2="${dimX+5}" y2="${y}"   stroke="${color.stroke}" stroke-width="0.8" opacity="0.7"/>
+      <line x1="${dimX-5}" y1="${capY}" x2="${dimX+5}" y2="${capY}" stroke="${color.stroke}" stroke-width="0.8" opacity="0.7"/>
+      <text transform="rotate(-90,${dimX-10},${y + drawH/2})" x="${dimX-10}" y="${y + drawH/2}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="${color.text}" font-weight="600" opacity="0.85">${r.cutLen.toLocaleString()}mm</text>`;
+
+    // ⑦ 캡션 바
     const usedMm   = r.pcsPerRow * r.needW + r.tapePerRow * s.tapeW;
     const usagePct = (usedMm / s.fabricW * 100).toFixed(1);
-    const capLeft  = `${s.fabricW}mm → ${r.pcsPerRow}개${r.tapePerRow > 0 ? ` + 링테이프 ${r.tapePerRow}줄` : ''} (${usagePct}% 사용)`;
+    const capLeft  = `폭 ${s.fabricW}mm → ${r.pcsPerRow}개${r.tapePerRow > 0 ? ` + 링테이프 ${r.tapePerRow}줄` : ''} (${usagePct}% 사용)`;
     const capRight = r.tapePerRow > 0
       ? `링테이프 ${r.tapePerRow}줄`
       : (wasteW > 5 ? `잔여 ${Math.round(r.remainW)}mm` : '');
@@ -1027,17 +1041,17 @@ function renderCutDiagram(results, s) {
       <text x="5" y="${capY + CAP_H/2 + 1}" dominant-baseline="middle" font-size="8.5" fill="${color.text}">${capLeft}</text>
       ${capRight ? `<text x="${SVG_W-5}" y="${capY + CAP_H/2 + 1}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#92400E">${capRight}</text>` : ''}`;
 
-    // ⑦ 구간 하단 구분선
+    // ⑧ 구간 하단 구분선
     const borderLine = `<line x1="0" y1="${y+bandH}" x2="${SVG_W}" y2="${y+bandH}" stroke="#CBD5E1" stroke-width="1"/>`;
 
-    return `${filterRect}${tapeSvg}${wasteSvg}${dividers}${mainLabel}${capSvg}${borderLine}`;
+    return `${dimLine}${filterRect}${tapeSvg}${wasteSvg}${dividers}${mainLabel}${capSvg}${borderLine}`;
   }).join('');
 
   // 상단 원단 폭 표시
   const topRule = `<line x1="0" y1="0" x2="${SVG_W}" y2="0" stroke="#94A3B8" stroke-width="1.2"/>
     <text x="${SVG_W/2}" y="-5" text-anchor="middle" font-size="10" fill="#64748B">← 원단 폭 ${s.fabricW}mm →</text>`;
 
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 -16 ${SVG_W} ${svgH+18}" style="display:block;border:1px solid #E2E8F0;border-radius:8px;background:#fff;">${topRule}${bandsSvg}</svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="-36 -16 ${SVG_W+36} ${svgH+18}" style="display:block;border:1px solid #E2E8F0;border-radius:8px;background:#fff;">${topRule}${bandsSvg}</svg>`;
 
   document.getElementById('cut-diagram-svg').innerHTML = svg;
   document.getElementById('cut-diagram-scale').textContent =
