@@ -6,13 +6,15 @@
   <title>서진필터 — 산업용 백필터 전문 제조 | SEOJIN FILTER</title>
   <meta name="description" content="2009년 설립, 17년 경력의 산업용 백필터(Bag Filter) 전문 제조사 서진필터. 펄스 제트, 쉐이커, PTFE 필터백 등 맞춤 집진 솔루션. 경기도 부천 소재.">
   <meta name="keywords" content="서진필터, 백필터, bag filter, 집진기, 집진설비, 필터백, 산업용 집진, 펄스 제트 필터, 분진 포집, 환경설비, 대기오염방지설비, 백필터 가격, 백필터 견적, 백필터 제조, 부천 백필터">
+  <meta name="google-site-verification" content="-5IdgebOFb2qEJwjKCc4ImDnMGeQIPQ8ZfGxoUPaS7o" />
   <meta property="og:title" content="서진필터 — 산업용 백필터 전문 제조">
   <meta property="og:description" content="2009년 설립, 17년 경력의 산업용 백필터 전문 제조사 서진필터. 경기도 부천 소재.">
   <meta property="og:type" content="website">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏭</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='14' fill='%231a2b4a'/><text y='72' x='50' text-anchor='middle' font-size='46' font-weight='bold' fill='white' font-family='sans-serif'>SF</text></svg>">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/layout.css">
   <link rel="stylesheet" href="css/pages/home.css">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body>
 
@@ -21,7 +23,7 @@
   <div class="container">
     <div class="header-inner">
       <a href="index.html" class="site-logo">
-        <span class="logo-icon">🏭</span>
+        <span class="logo-icon">SF</span>
         <span>
           서진필터<br>
           <span class="logo-sub">SEOJIN FILTER</span>
@@ -33,7 +35,7 @@
       <nav class="site-nav" aria-label="주 메뉴">
         <a href="#about">회사소개</a>
         <a href="products.html">제품</a>
-        <a href="portfolio.html">납품실적</a>
+        <a href="tel:031-681-0833" class="header-tel">📞 031-681-0833</a>
         <a href="inquiry.html" class="nav-cta">견적 문의</a>
       </nav>
     </div>
@@ -42,14 +44,28 @@
 
 <!-- ===== HERO ===== -->
 <section class="hero">
+  <!-- 부유 파티클 -->
+  <div class="hero-particles" id="heroParticles"></div>
+
+  <!-- 텍스트 -->
   <div class="hero-content">
-    <span class="hero-badge">✦ 2009년 창립 · 17년 집진 전문 기업</span>
-    <h1>17년의 신뢰,<br><em>정밀한 집진 솔루션</em></h1>
-    <p>산업용 백필터 전문 제조·설계·A/S<br>서진필터가 최적의 집진 시스템을 공급합니다.</p>
+    <p class="hero-tagline">산업용 백필터 전문 제작 | 현장 맞춤 필터 생산</p>
+    <h1 class="hero-brand">서진필터</h1>
+    <p class="hero-en">Dust Collector Filter Specialist</p>
     <div class="hero-btns">
       <a href="inquiry.html" class="btn btn-primary">무료 견적 받기</a>
       <a href="products.html" class="btn btn-outline">제품 카탈로그</a>
     </div>
+  </div>
+
+  <!-- 하단 웨이브 -->
+  <div class="hero-wave">
+    <svg viewBox="0 0 1440 90" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="wave2" d="M0,45 C180,90 360,0 540,45 C720,90 900,0 1080,45 C1260,90 1350,20 1440,45 L1440,90 L0,90 Z"
+        fill="rgba(13,79,60,0.15)"/>
+      <path class="wave1" d="M0,60 C240,10 480,90 720,50 C960,10 1200,80 1440,55 L1440,90 L0,90 Z"
+        fill="#0d4f3c"/>
+    </svg>
   </div>
 </section>
 
@@ -77,52 +93,60 @@
   </div>
 </section>
 
+<!-- ===== WHY US ===== -->
+<section class="section" id="why">
+  <div class="container">
+    <div class="section-header reveal">
+      <h2>서진필터를 선택하는 이유</h2>
+      <span class="line"></span>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <h3>원단부터 다릅니다</h3>
+        <p>모든 제품은 납품 전 원단 두께·중량·외관 상태를 직접 검사합니다. 검사를 통과한 원단만 생산 라인에 투입되며, 이 한 단계가 필터 수명을 결정합니다.</p>
+      </div>
+      <div class="why-card reveal">
+        <h3>백필터 전 공정 자체 생산</h3>
+        <p>원단 재단·봉제·부자재 부착까지 백필터 전 공정을 자체 라인에서 직접 수행합니다. 외주 없이 만들기에 품질 편차가 없고, 긴급 주문도 즉시 대응 가능합니다.</p>
+      </div>
+      <div class="why-card reveal">
+        <h3>현장 맞춤 설계</h3>
+        <p>처리 풍량·분진 종류·운전 온도를 분석해 최적의 필터 재질과 규격을 제안합니다. 17년간 쌓인 500건 이상의 납품 데이터가 설계 근거입니다.</p>
+      </div>
+      <div class="why-card reveal">
+        <h3>납품 후에도 책임집니다</h3>
+        <p>납품 완료로 관계가 끝나지 않습니다. A/S 부품 당일 출고, 현장 방문 점검, 교체 주기 안내까지 — 고객의 설비가 멈추지 않도록 지속적으로 지원합니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ===== ABOUT ===== -->
 <section class="section section--light" id="about">
   <div class="container">
     <div class="about-grid">
       <div class="about-text reveal">
-        <h2>17년의 기술력과<br>신뢰를 쌓아왔습니다</h2>
+        <h2>경험이 쌓은 기술,<br>기술이 만드는 신뢰</h2>
         <p>서진필터는 2009년 3월 설립 이래 산업용 집진 설비 전문 제조기업으로서, 국내 주요 산업 현장에 꾸준히 백필터 시스템을 납품해 왔습니다.</p>
-        <p>펄스 제트, 쉐이커, 역기류 방식의 다양한 백필터 시스템과 PTFE·폴리에스터·노멕스 등 맞춤 필터백을 직접 제조합니다. 설계부터 시공, A/S까지 일괄 지원합니다.</p>
+        <p>펄스 제트, 쉐이커, 역기류 방식에 맞는 필터백을 PE·PP·PTFE·PPS·NOMEX 등 다양한 원단으로 직접 제조합니다. 규격 선정부터 납품 후 A/S까지 책임집니다.</p>
         <div class="cert-list">
-          <span class="cert-badge">ISO 9001 인증</span>
-          <span class="cert-badge">환경부 우수환경기업</span>
-          <span class="cert-badge">벤처기업 인증</span>
-          <span class="cert-badge">특허 보유 (집진기 탈진 구조)</span>
+          <span class="cert-badge">직접생산증명서</span>
+          <span class="cert-badge">공공기관납품기업</span>
+          <span class="cert-badge">나라장터 등록업체</span>
+        </div>
+        <div class="gov-logos">
+          <img src="images/logo-smes.png" alt="중소벤처24">
+          <img src="images/logo-g2b.png" alt="나라장터">
         </div>
       </div>
-      <div class="reveal">
-        <div class="timeline">
-          <div class="timeline-item">
-            <div class="timeline-year">2009</div>
-            <div class="timeline-desc">서진필터 설립 (2009년 3월 5일) — 산업용 백필터 전문 제조업 시작</div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year">2011</div>
-            <div class="timeline-desc">백필터 하우징·필터백 자체 생산 라인 구축</div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year">2013</div>
-            <div class="timeline-desc">주요 산업체 납품 실적 확대 — 안정적 성장 기반 마련</div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year">2015</div>
-            <div class="timeline-desc">펄스 제트 방식 고효율 백필터 설계 기술 고도화</div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year">2018</div>
-            <div class="timeline-desc">PTFE 필터백 등 특수 소재 필터 제조 역량 확보</div>
-          </div>
-          <div class="timeline-item">
-            <div class="timeline-year">2021</div>
-            <div class="timeline-desc">경기도 부천 현 사무소 이전 · 생산 역량 강화</div>
-          </div>
-          <div class="timeline-item highlight">
-            <div class="timeline-year">2026</div>
-            <div class="timeline-desc">창립 17주년 · 지속적인 기술 혁신 및 고객 만족 추구</div>
-          </div>
-        </div>
+      <div class="reveal lottie-about-wrap">
+        <lottie-player
+          src="js/plant-animation.json"
+          background="transparent"
+          speed="1"
+          loop
+          autoplay
+        ></lottie-player>
       </div>
     </div>
   </div>
@@ -136,37 +160,41 @@
       <p>산업 환경에 최적화된 고성능 집진 솔루션을 공급합니다</p>
       <span class="line"></span>
     </div>
-    <div class="product-cards">
-      <div class="product-card reveal">
-        <div class="product-card-img">🔧</div>
-        <div class="product-card-body">
-          <h3>펄스 제트 백필터</h3>
-          <p>압축공기 탈진 방식. 처리 풍량 1,000~100,000 m³/hr. 운전 중 연속 탈진 가능.</p>
-          <span class="badge">하우징</span>
+    <!-- Tier 1: 핵심 제조 제품 -->
+    <div class="product-main-card reveal">
+      <span class="product-main-badge">자체 제조</span>
+      <div class="product-main-inner">
+        <div class="product-main-text">
+          <h3>BAG FILTER <em>백필터</em></h3>
+          <p>집진기 핵심 여과 소재. 현장의 분진 종류·운전 온도·처리 풍량을 분석해 최적의 방식과 원단을 직접 선정하고, 재단·봉제·부자재 부착까지 전 공정을 자체 생산합니다.</p>
+          <div class="product-spec-row">
+            <span class="spec-label">방식</span>
+            <span class="spec-tags">스냅링형 · 끈결속형 · 고무오링형 · 플랜지형 · 봉투형</span>
+          </div>
+          <div class="product-spec-row">
+            <span class="spec-label">원단</span>
+            <span class="spec-tags">PE · PP · PTFE · PPS · NOMEX</span>
+          </div>
         </div>
+        <a href="products.html" class="btn btn-primary" style="white-space:nowrap;align-self:center">제품 상세 보기</a>
       </div>
-      <div class="product-card reveal">
-        <div class="product-card-img">⚙️</div>
-        <div class="product-card-body">
-          <h3>PTFE 나노섬유 필터백</h3>
-          <p>포집 효율 99.99% 이상. 고온·고습·부식성 가스 환경에 최적화된 프리미엄 필터백.</p>
-          <span class="badge">필터백</span>
+    </div>
+
+    <!-- Tier 2: 납품 지원 품목 -->
+    <div class="supply-section reveal">
+      <div class="supply-header">함께 납품 가능한 부품류</div>
+      <div class="supply-cards">
+        <div class="supply-card">
+          <h4>BAG CAGE <em>백케이지</em></h4>
+          <p>필터백 형태를 유지하는 금속 지지대. 탄소강·SUS304·SUS316 재질. 규격 외 사이즈 대응.</p>
         </div>
-      </div>
-      <div class="product-card reveal">
-        <div class="product-card-img">🏗️</div>
-        <div class="product-card-body">
-          <h3>집진 시스템 일체형</h3>
-          <p>팬·덕트·후드·제어반 포함 턴키 공급. 설계→제작→시공→시운전 일괄 지원.</p>
-          <span class="badge">시스템</span>
+        <div class="supply-card">
+          <h4>VENTURI <em>벤투리</em></h4>
+          <p>압축공기를 필터백에 균일하게 분사하는 탈진 노즐. 탈진 효율 극대화.</p>
         </div>
-      </div>
-      <div class="product-card reveal">
-        <div class="product-card-img">🔩</div>
-        <div class="product-card-body">
-          <h3>A/S 부품 공급</h3>
-          <p>필터백·케이지·솔레노이드 밸브·다이어프램 등 당일 출고 가능한 부품 재고 보유.</p>
-          <span class="badge">A/S</span>
+        <div class="supply-card">
+          <h4>PARTS <em>집진기 부품</em></h4>
+          <p>다이어프램 밸브·마노미터·커넥터·멀티타이머 등 집진기 소모성 부품.</p>
         </div>
       </div>
     </div>
@@ -175,6 +203,7 @@
     </div>
   </div>
 </section>
+
 
 <!-- ===== INDUSTRIES ===== -->
 <section class="section section--dark">
@@ -185,34 +214,16 @@
       <span class="line"></span>
     </div>
     <div class="industry-grid">
-      <div class="industry-item reveal">
-        <span class="industry-icon">⚒️</span>
-        <div class="industry-name">철강</div>
-      </div>
-      <div class="industry-item reveal">
-        <span class="industry-icon">🏗️</span>
-        <div class="industry-name">시멘트</div>
-      </div>
-      <div class="industry-item reveal">
-        <span class="industry-icon">🧪</span>
-        <div class="industry-name">화학</div>
-      </div>
-      <div class="industry-item reveal">
-        <span class="industry-icon">⚡</span>
-        <div class="industry-name">발전</div>
-      </div>
-      <div class="industry-item reveal">
-        <span class="industry-icon">🌾</span>
-        <div class="industry-name">식품</div>
-      </div>
-      <div class="industry-item reveal">
-        <span class="industry-icon">📄</span>
-        <div class="industry-name">제지</div>
-      </div>
-      <div class="industry-item reveal">
-        <span class="industry-icon">🔩</span>
-        <div class="industry-name">금속</div>
-      </div>
+      <div class="industry-item reveal"><div class="industry-name">철강</div></div>
+      <div class="industry-item reveal"><div class="industry-name">시멘트</div></div>
+      <div class="industry-item reveal"><div class="industry-name">화학</div></div>
+      <div class="industry-item reveal"><div class="industry-name">발전</div></div>
+      <div class="industry-item reveal"><div class="industry-name">식품</div></div>
+      <div class="industry-item reveal"><div class="industry-name">제지</div></div>
+      <div class="industry-item reveal"><div class="industry-name">금속</div></div>
+      <div class="industry-item reveal"><div class="industry-name">목재</div></div>
+      <div class="industry-item reveal"><div class="industry-name">배터리</div></div>
+      <div class="industry-item reveal"><div class="industry-name">반도체</div></div>
     </div>
   </div>
 </section>
@@ -232,17 +243,16 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="index.html" class="site-logo">
-          <span class="logo-icon">🏭</span>
+          <span class="logo-icon">SF</span>
           <span>서진필터<br><span class="logo-sub">SEOJIN FILTER</span></span>
         </a>
-        <p>2009년 설립, 17년 경력의 산업용 백필터 전문 제조사.<br>설계·제작·시공·A/S 일괄 지원.</p>
+        <p>2009년 설립, 17년 경력의 산업용 백필터 전문 제조사.<br>원단 선정·재단·봉제·납품·A/S 일괄 지원.</p>
       </div>
       <div class="footer-col">
         <h4>바로가기</h4>
         <ul>
           <li><a href="#about">회사 소개</a></li>
           <li><a href="products.html">제품 카탈로그</a></li>
-          <li><a href="portfolio.html">납품 실적</a></li>
           <li><a href="inquiry.html">견적·문의</a></li>
         </ul>
       </div>
@@ -258,7 +268,7 @@
     </div>
     <div class="footer-bottom">
       <span>© 2026 서진필터 · 대표 최종배 · 사업자등록번호: 130-40-26398</span>
-      <a href="admin/" title="내부 관리">⚙</a>
+      <a href="admin/" title="내부 관리">관리</a>
     </div>
   </div>
 </footer>
