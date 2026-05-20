@@ -597,7 +597,7 @@
 <!-- 작업 지시서 (인쇄 전용) -->
 <div id="work-order">
   <div class="wo-header">
-    <h1>✂️ 서진필터 재단 작업 지시서</h1>
+    <h1>서진필터 재단 작업 지시서</h1>
     <p id="wo-date"></p>
   </div>
   <div class="wo-meta">
@@ -616,15 +616,8 @@
     <tbody id="wo-tbody"></tbody>
     <tfoot id="wo-tfoot"></tfoot>
   </table>
-  <div class="wo-section-title">재단 순서 추천</div>
-  <div id="wo-order"></div>
   <div class="wo-section-title">재단 평면도</div>
   <div id="wo-diagram"></div>
-  <div class="wo-sign">
-    <div class="wo-sign-box"><div class="wo-sign-label">작업 지시</div><div class="wo-sign-line">서명</div></div>
-    <div class="wo-sign-box"><div class="wo-sign-label">재단 담당</div><div class="wo-sign-line">서명</div></div>
-    <div class="wo-sign-box"><div class="wo-sign-label">확인</div><div class="wo-sign-line">서명</div></div>
-  </div>
   <div class="wo-footer">서진필터 재단 계산기 v3 · 출력일: <span id="wo-print-date"></span></div>
 </div>
 
@@ -1097,16 +1090,6 @@ function printWorkOrder() {
       <td colspan="3">발주량: ${grandMg.toFixed(2)}M (${rolls}롤)</td>
     </tr>`;
 
-  // 재단 순서 테이블
-  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
-  let prevNeedW = null, seqNum = 0;
-  const orderRows = sorted.map(({ p, r }) => {
-    if (r.needW.toFixed(1) !== prevNeedW) { seqNum++; prevNeedW = r.needW.toFixed(1); }
-    const sameGroup = sorted.filter(e => e.r.needW.toFixed(1) === r.needW.toFixed(1)).length > 1;
-    return `<tr><td>${seqNum}</td><td>H${p.h||'?'} × ${p.length}L</td><td>${r.needW.toFixed(1)}</td><td>${r.rows}장</td><td>${sameGroup ? '동시 재단 가능' : ''}</td></tr>`;
-  }).join('');
-  document.getElementById('wo-order').innerHTML =
-    `<table class="wo-table"><thead><tr><th>순서</th><th>규격</th><th>필요폭(mm)</th><th>장수</th><th>비고</th></tr></thead><tbody>${orderRows}</tbody></table>`;
 
   // 평면도 SVG 복사
   const diagSvg = document.getElementById('cut-diagram-svg').innerHTML;
