@@ -990,18 +990,13 @@ function renderCutDiagram(results, s) {
          ${wasteW > 32 ? `<text x="${filterW + tapeZW + wasteW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#94A3B8">낭비 ${Math.round(r.remainW - r.tapePerRow * s.tapeW)}mm</text>` : ''}`
       : '';
 
-    // ⑤ 메인 라벨 3줄: 링치수 / 재단길이 분해식 / 취수·장수
+    // ⑤ 메인 라벨 2줄: 링×총재단길이L / 폭수/장수
     const fs = Math.max(11, Math.min(14, drawH * 0.28));
     const rowsTxt = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
-    // 재단길이 분해식: 백길이 + 스냅링 [+ 덧단] = cutLen
-    const snapPart = s.snapAdd > 0 ? `+스냅${s.snapAdd}` : '';
-    const hemPart  = s.hemAdd  > 0 ? `+덧단${s.hemAdd}`  : '';
-    const formulaTxt = `${p.length}${snapPart}${hemPart}=${r.cutLen}mm`;
-    const lh = fs * 1.35; // 줄 간격
+    const lh = fs * 0.65; // 줄 간격 (2줄이므로 좁게)
     const mainLabel = `
-      <text x="${filterW/2}" y="${midY - lh}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}</text>
-      <text x="${filterW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(9, fs * 0.82)}" fill="${color.text}" font-weight="600">${formulaTxt}</text>
-      <text x="${filterW/2}" y="${midY + lh}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(9, fs * 0.82)}" fill="${color.text}" font-weight="500">${r.pcsPerRow}개/${rowsTxt}장</text>`;
+      <text x="${filterW/2}" y="${midY - lh}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${r.cutLen}L</text>
+      <text x="${filterW/2}" y="${midY + lh}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(9, fs * 0.85)}" fill="${color.text}" font-weight="600">${r.pcsPerRow}폭/${rowsTxt}장</text>`;
 
     // ⑥ Y축 세로 치수선 (왼쪽) — 재단사가 세로 방향 치수 확인
     const dimX = -22;
@@ -1060,7 +1055,7 @@ function printWorkOrder() {
   document.getElementById('wo-tbody').innerHTML = valid.map(({ p, r }, i) => `
     <tr>
       <td>${i+1}</td>
-      <td>H${p.h||'?'} × ${p.length}L</td>
+      <td>H${p.h||'?'} × ${r.cutLen}L</td>
       <td>${p.ring}</td>
       <td>${p.qty}개</td>
       <td>${Math.round(r.needW)}mm</td>
