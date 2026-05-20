@@ -368,32 +368,26 @@
   /* ── 작업 지시서 (인쇄 전용) ── */
   #work-order { display:none; }
   @media print {
+    @page { margin: 8mm 10mm; }
     body { background:#fff !important; color:#111 !important; }
     .main-app { display:none !important; }
     #work-order {
       display:block !important;
       font-family:'Noto Sans KR', sans-serif;
-      color:#111; padding:20px;
+      color:#111; padding:0;
     }
-    .wo-header { text-align:center; border-bottom:3px solid #111; padding-bottom:12px; margin-bottom:20px; }
-    .wo-header h1 { font-size:22px; font-weight:900; margin-bottom:4px; }
-    .wo-header p  { font-size:12px; color:#555; }
-    .wo-meta { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:16px; }
-    .wo-meta-item { border:1px solid #ccc; border-radius:4px; padding:8px 10px; }
-    .wo-meta-label { font-size:9px; color:#888; margin-bottom:2px; }
-    .wo-meta-val   { font-size:13px; font-weight:700; }
-    .wo-section-title { font-size:13px; font-weight:700; border-left:4px solid #111; padding-left:8px; margin:16px 0 8px; }
-    .wo-table { width:100%; border-collapse:collapse; font-size:11px; margin-bottom:16px; }
-    .wo-table th { background:#f0f0f0; border:1px solid #ccc; padding:7px 8px; text-align:center; font-weight:700; }
-    .wo-table td { border:1px solid #ccc; padding:7px 8px; text-align:center; }
+    .wo-header { text-align:center; border-bottom:2px solid #111; padding-bottom:6px; margin-bottom:8px; }
+    .wo-header h1 { font-size:17px; font-weight:900; margin-bottom:2px; }
+    .wo-header p  { font-size:10px; color:#555; }
+    .wo-section-title { font-size:11px; font-weight:700; border-left:3px solid #111; padding-left:6px; margin:8px 0 4px; }
+    .wo-table { width:100%; border-collapse:collapse; font-size:10px; margin-bottom:8px; }
+    .wo-table th { background:#f0f0f0; border:1px solid #ccc; padding:4px 6px; text-align:center; font-weight:700; }
+    .wo-table td { border:1px solid #ccc; padding:4px 6px; text-align:center; }
     .wo-table tr:nth-child(even) td { background:#fafafa; }
     .wo-total-row td { background:#e8f5e9 !important; font-weight:700; }
-    .wo-sign { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:24px; }
-    .wo-sign-box { border:1px solid #ccc; border-radius:4px; padding:10px; text-align:center; }
-    .wo-sign-label { font-size:10px; color:#888; margin-bottom:20px; }
-    .wo-sign-line  { border-top:1px solid #ccc; padding-top:6px; font-size:10px; color:#aaa; }
-    .wo-footer { text-align:center; margin-top:16px; font-size:10px; color:#999; border-top:1px solid #ccc; padding-top:8px; }
-    #wo-diagram svg { width:100% !important; max-width:100% !important; height:auto !important; }
+    .wo-footer { text-align:center; margin-top:8px; font-size:9px; color:#999; border-top:1px solid #ccc; padding-top:6px; }
+    #wo-diagram { page-break-inside:avoid; }
+    #wo-diagram svg { width:100% !important; max-width:100% !important; max-height:55vh !important; height:auto !important; }
   }
 
   /* ── OCR 모달 ── */
@@ -599,11 +593,6 @@
   <div class="wo-header">
     <h1>서진필터 재단 작업 지시서</h1>
     <p id="wo-date"></p>
-  </div>
-  <div class="wo-meta">
-    <div class="wo-meta-item"><div class="wo-meta-label">원단 폭</div><div class="wo-meta-val" id="wo-fabric">—</div></div>
-    <div class="wo-meta-item"><div class="wo-meta-label">여유율</div><div class="wo-meta-val" id="wo-margin">—</div></div>
-    <div class="wo-meta-item"><div class="wo-meta-label">롤 기준 길이</div><div class="wo-meta-val" id="wo-roll">—</div></div>
   </div>
   <div class="wo-section-title">제품별 재단 내역</div>
   <table class="wo-table">
@@ -1061,9 +1050,6 @@ function printWorkOrder() {
   const dateStr = new Date().toLocaleString('ko-KR');
   document.getElementById('wo-date').textContent = dateStr;
   document.getElementById('wo-print-date').textContent = dateStr;
-  document.getElementById('wo-fabric').textContent = s.fabricW + 'mm';
-  document.getElementById('wo-margin').textContent = s.margin + '%';
-  document.getElementById('wo-roll').textContent = s.rollLen + 'm';
 
   const grandM   = valid.reduce((a, e) => a + e.r.totalM, 0);
   const grandMg  = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
