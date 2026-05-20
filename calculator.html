@@ -229,13 +229,6 @@
   .pri-val { font-size: 15px; font-weight: 700; font-family: var(--mono); color: var(--green); text-align: right; }
   .pri-val .sub { font-size: 10px; color: var(--text-mute); font-weight: 400; }
 
-  /* 경고 */
-  .alert-box {
-    background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.25);
-    border-radius: 8px; padding: 10px 12px; font-size: 11px; color: var(--amber);
-    margin-bottom: 12px; display: none; font-family: var(--mono); line-height: 1.7; white-space: pre-line;
-  }
-  .alert-box.show { display: block; }
 
   /* 버튼 */
   .btn {
@@ -569,7 +562,6 @@
   </div>
 
   <!-- 경고 -->
-  <div class="alert-box" id="alert-box"></div>
 
   <!-- 재단 순서 추천 -->
   <div class="order-card" id="order-card" style="display:none;">
@@ -651,7 +643,7 @@
     </div>
 
     <!-- 분석 버튼 -->
-    <button class="btn btn-primary" id="ocr-analyze-btn" onclick="runOcrAnalysis()" style="width:100%;margin:12px 0 8px;">
+    <button class="btn btn-green" id="ocr-analyze-btn" onclick="runOcrAnalysis()" style="width:100%;margin:12px 0 8px;">
       🔍 AI 분석
     </button>
 
@@ -737,15 +729,16 @@ function calcOne(p, s) {
   const remainW   = s.fabricW > 0 ? s.fabricW - pcsPerRow * needW : 0;
   const tapePerRow= remainW >= s.tapeW ? Math.floor(remainW / s.tapeW) : 0;
   const cutLen     = length + s.snapAdd + s.hemAdd;
-  const rows       = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;  // 올림 → 안전 발주
-  const excessPcs  = pcsPerRow > 0 ? rows * pcsPerRow - qty : 0;      // 초과 취수 (재고 전환)
+  const fullRows   = pcsPerRow > 0 ? Math.floor(qty / pcsPerRow) : 0;
+  const partialPcs = pcsPerRow > 0 ? qty % pcsPerRow : 0;  // 재고 활용 개수 (0이면 딱 맞음)
+  const rows       = fullRows;                              // 발주 기준 = 정장 수 (스크랩은 제외)
   const totalMm    = rows * cutLen;
   const totalM     = totalMm / 1000;
   const totalMMargin = totalM * (1 + s.margin / 100);
   const tapePcs    = tapePerRow * rows;
   const usedW      = pcsPerRow * needW;
 
-  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, excessPcs, totalMm, usedW, totalM, totalMMargin, tapePcs };
+  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, partialPcs, totalMm, usedW, totalM, totalMMargin, tapePcs };
 }
 
 // ── 테이블 구조 렌더 (행 추가/삭제/로드 시만 호출) ──
@@ -795,8 +788,8 @@ function updateTableResults(results) {
     if (r) {
       pEl.textContent  = r.pcsPerRow;               pEl.className  = 'tbl-res';
       tlEl.textContent = r.cutLen.toLocaleString();  tlEl.className = 'tbl-res';
-      rEl.textContent  = r.excessPcs > 0 ? `${r.rows}장 (+${r.excessPcs}개 잔여)` : `${r.rows}장`;
-      rEl.className    = r.excessPcs > 0 ? 'tbl-res tbl-res-partial' : 'tbl-res';
+      rEl.textContent  = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
+      rEl.className    = r.partialPcs > 0 ? 'tbl-res tbl-res-partial' : 'tbl-res';
       mEl.textContent  = r.totalMMargin.toFixed(2); mEl.className  = 'tbl-res amber';
     } else {
       pEl.textContent  = '—'; pEl.className  = 'tbl-res mute';
@@ -815,8 +808,9 @@ function renderTfoot(results) {
   const tfoot = document.getElementById('prod-tfoot');
   const valid = results.filter(e => e.r);
   if (!valid.length) { tfoot.innerHTML = ''; return; }
-  const grandM   = valid.reduce((a, e) => a + e.r.totalM,       0);
-  const grandMg  = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const grandM        = valid.reduce((a, e) => a + e.r.totalM,       0);
+  const grandMg       = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const sumCutLen     = valid.reduce((a, e) => a + e.r.cutLen,        0);
   const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
   const s       = getShared();
   const sumRows = valid.reduce((a, e) => a + e.r.rows, 0);
@@ -826,15 +820,16 @@ function renderTfoot(results) {
     : '';
   tfoot.innerHTML = `
     <tr class="total-row">
-      <td colspan="6" class="total-label">합계 ${valid.length}종 · ${totalQty}개 · 총 ${sumRows}장</td>
-      <td colspan="3" class="total-label" style="text-align:right;padding-right:8px;">순수 원단</td>
-      <td class="total-val" style="text-align:right;">${grandM.toFixed(2)} M</td><td></td>
+      <td colspan="7" class="total-label">합계 ${valid.length}종 · ${totalQty}개 · 총 ${sumRows}장</td>
+      <td class="total-val" style="color:var(--green-dim);font-size:12px;text-align:center;">${sumCutLen.toLocaleString()}</td>
+      <td></td>
+      <td class="total-val" style="text-align:right;">${grandM.toFixed(2)}<span style="font-size:9px;font-weight:600;margin-left:2px">M</span></td><td></td>
     </tr>
     <tr class="total-row total-final-row">
       <td colspan="9" class="total-label" style="font-size:11px;padding:10px 8px;">
         ✅ 최종 발주량 (여유 ${s.margin}% 포함)${rollTxt}
       </td>
-      <td class="total-val amber" style="font-size:13px;font-weight:800;text-align:right;">${grandMg.toFixed(2)} M</td>
+      <td class="total-val amber" style="font-size:13px;font-weight:800;text-align:right;">${grandMg.toFixed(2)}<span style="font-size:9px;font-weight:600;margin-left:2px">M</span></td>
       <td></td>
     </tr>`;
 }
@@ -847,16 +842,6 @@ function calcOnly() {
   updateTableResults(results);
   renderTfoot(results);
 
-  // 경고
-  const alerts = [];
-  results.forEach(({ p, r }, i) => {
-    if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
-    if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
-  });
-  if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
-  const alertEl = document.getElementById('alert-box');
-  alertEl.textContent = alerts.join('\n');
-  alertEl.classList.toggle('show', alerts.length > 0);
 
   // 뱃지
   document.getElementById('prod-count-badge').textContent =
@@ -889,7 +874,7 @@ function renderCutSpec(results) {
       <td class="cut-spec-num">${String(i+1).padStart(2,'0')}</td>
       <td class="cut-spec-label">H${p.h||'?'} / <strong style="color:var(--text)">${p.ring}</strong></td>
       <td class="cut-spec-val-w">${Math.round(r.needW)}</td>
-      <td class="cut-spec-label">${r.rows}장</td>
+      <td class="cut-spec-label">${r.rows}${r.partialPcs > 0 ? '/'+r.partialPcs : ''}</td>
       <td class="cut-spec-val-l">
         <div style="font-size:10px;color:var(--text-mute);font-weight:400;margin-bottom:2px;">${formula}</div>
         = ${r.cutLen.toLocaleString()}
@@ -925,7 +910,7 @@ function renderCuttingOrder(results, s) {
       <div class="order-badge">${seq}</div>
       <div class="order-spec">
         <strong>H${p.h||'?'} / 링${p.ring} × ${p.length}L</strong> · ${p.qty}개
-        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.rows}장${r.excessPcs > 0 ? ` <span style="color:var(--amber);font-size:9px;">(+${r.excessPcs}개 잔여)</span>` : ''}
+        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`}
         ${isSameGroup ? '<span class="group-tag">동시 재단 가능</span>' : ''}
       </div>
       <div class="order-val">${r.totalMMargin.toFixed(2)}M</div>
@@ -942,8 +927,8 @@ function renderCutDiagram(results, s) {
   if (!valid.length || s.fabricW <= 0) { card.style.display = 'none'; return; }
   card.style.display = 'block';
 
-  // 재단 순서(needW 내림차순) 정렬
-  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
+  // 수량 내림차순 정렬 (많은 수량 → 위, 적은 수량 → 아래)
+  const sorted = [...valid].sort((a, b) => b.r.qty - a.r.qty);
 
   const SVG_W  = 560;
   const CAP_H  = 18;                               // 캡션 바 높이(px)
@@ -1005,10 +990,14 @@ function renderCutDiagram(results, s) {
          ${wasteW > 32 ? `<text x="${filterW + tapeZW + wasteW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#94A3B8">낭비 ${Math.round(r.remainW - r.tapePerRow * s.tapeW)}mm</text>` : ''}`
       : '';
 
-    // ⑤ 메인 라벨 (필터 구역 중앙) — 치수 텍스트만 크게, 링테이프는 별도 유지
-    const fs = Math.max(12, Math.min(15, drawH * 0.32));
-    const rowsTxt = r.excessPcs > 0 ? `${r.rows}장 (+${r.excessPcs}잔)` : `${r.rows}장`;
-    const mainLabel = `<text x="${filterW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${p.length}L · ${r.pcsPerRow}개/폭 · ${rowsTxt}</text>`;
+    // ⑤ 메인 라벨 (필터 구역 중앙) — 규격 크게(2줄), 링테이프 글씨는 별도 유지
+    const fs1 = Math.max(15, Math.min(22, drawH * 0.42));
+    const fs2 = Math.max(11, Math.min(15, drawH * 0.28));
+    const rowsTxt = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
+    const mainLabel = `<text text-anchor="middle" dominant-baseline="middle" font-weight="700" fill="${color.text}">
+      <tspan x="${filterW/2}" y="${midY - fs1 * 0.45}" font-size="${fs1}">링${p.ring}×${r.cutLen.toLocaleString()}</tspan>
+      <tspan x="${filterW/2}" dy="${fs1 + 4}" font-size="${fs2}">${r.pcsPerRow}개/폭 · ${rowsTxt}</tspan>
+    </text>`;
 
     // ⑥ 캡션 바 — 기존 vis-labels 정보 통합
     const usedMm   = r.pcsPerRow * r.needW + r.tapePerRow * s.tapeW;
@@ -1066,7 +1055,7 @@ function printWorkOrder() {
       <td>${p.qty}개</td>
       <td>${Math.round(r.needW)}mm</td>
       <td>${r.pcsPerRow}개/폭</td>
-      <td>${r.excessPcs > 0 ? `${r.rows}장 (+${r.excessPcs}개 잔여)` : `${r.rows}장`}</td>
+      <td>${r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`}</td>
       <td>${r.cutLen}mm</td>
       <td>${r.totalMMargin.toFixed(2)}M</td>
     </tr>`).join('');
@@ -1078,13 +1067,11 @@ function printWorkOrder() {
       <td colspan="3">발주량: ${grandMg.toFixed(2)}M (${rolls}롤)</td>
     </tr>`;
 
-  // 재단 순서 테이블
-  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
-  let prevNeedW = null, seqNum = 0;
-  const orderRows = sorted.map(({ p, r }) => {
-    if (r.needW.toFixed(1) !== prevNeedW) { seqNum++; prevNeedW = r.needW.toFixed(1); }
-    const sameGroup = sorted.filter(e => e.r.needW.toFixed(1) === r.needW.toFixed(1)).length > 1;
-    return `<tr><td>${seqNum}</td><td>H${p.h||'?'} × ${p.length}L</td><td>${r.needW.toFixed(1)}</td><td>${r.rows}장</td><td>${sameGroup ? '동시 재단 가능' : ''}</td></tr>`;
+  // 재단 순서 테이블 (수량 내림차순)
+  const sorted = [...valid].sort((a, b) => b.r.qty - a.r.qty);
+  const orderRows = sorted.map(({ p, r }, idx) => {
+    const rowsTxt = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
+    return `<tr><td>${idx+1}</td><td>H${p.h||'?'} × ${p.length}L</td><td>${r.needW.toFixed(1)}</td><td>${rowsTxt}</td><td></td></tr>`;
   }).join('');
   document.getElementById('wo-order').innerHTML =
     `<table class="wo-table"><thead><tr><th>순서</th><th>규격</th><th>필요폭(mm)</th><th>장수</th><th>비고</th></tr></thead><tbody>${orderRows}</tbody></table>`;
@@ -1130,7 +1117,7 @@ function renderSummary(results, s) {
       <div class="pri-num">${String(i+1).padStart(2,'0')}</div>
       <div>
         <div class="pri-spec"><strong>H${h} / 링${ring} × ${p.length}L</strong></div>
-        <div class="pri-spec" style="margin-top:2px;">${p.qty}개 · 취수 ${r.pcsPerRow}개/폭 · ${r.rows}장 · 재단 ${r.cutLen}mm</div>
+        <div class="pri-spec" style="margin-top:2px;">${p.qty}개 · 취수 ${r.pcsPerRow}개/폭 · ${r.rows}${r.partialPcs > 0 ? '/'+r.partialPcs : ''} · 재단 ${r.cutLen}mm</div>
       </div>
       <div>
         <div class="pri-val">${r.totalMMargin.toFixed(2)} M</div>
@@ -1251,7 +1238,7 @@ function copyResult() {
 
   const lines = valid.map(({ p, r }, i) =>
     `[${String(i+1).padStart(2,'0')}] H${p.h||'?'} / 링${p.ring} × ${p.length}L · ${p.qty}개\n` +
-    `     취수 ${r.pcsPerRow}개/폭 · ${r.rows}장 · 재단 ${r.cutLen}mm · ${r.totalMMargin.toFixed(2)}M`
+    `     취수 ${r.pcsPerRow}개/폭 · ${r.rows}${r.partialPcs > 0 ? '/'+r.partialPcs : ''} · 재단 ${r.cutLen}mm · ${r.totalMMargin.toFixed(2)}M`
   ).join('\n');
 
   const rolls = s.rollLen > 0 ? Math.ceil(grandMg / s.rollLen) : '—';

@@ -651,7 +651,7 @@
     </div>
 
     <!-- 분석 버튼 -->
-    <button class="btn btn-primary" id="ocr-analyze-btn" onclick="runOcrAnalysis()" style="width:100%;margin:12px 0 8px;">
+    <button class="btn btn-green" id="ocr-analyze-btn" onclick="runOcrAnalysis()" style="width:100%;margin:12px 0 8px;">
       🔍 AI 분석
     </button>
 
@@ -737,15 +737,16 @@ function calcOne(p, s) {
   const remainW   = s.fabricW > 0 ? s.fabricW - pcsPerRow * needW : 0;
   const tapePerRow= remainW >= s.tapeW ? Math.floor(remainW / s.tapeW) : 0;
   const cutLen     = length + s.snapAdd + s.hemAdd;
-  const rows       = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;  // 올림 → 안전 발주
-  const excessPcs  = pcsPerRow > 0 ? rows * pcsPerRow - qty : 0;      // 초과 취수 (재고 전환)
+  const fullRows   = pcsPerRow > 0 ? Math.floor(qty / pcsPerRow) : 0;
+  const partialPcs = pcsPerRow > 0 ? qty % pcsPerRow : 0;  // 재고 활용 개수 (0이면 딱 맞음)
+  const rows       = fullRows;                              // 발주 기준 = 정장 수 (스크랩은 제외)
   const totalMm    = rows * cutLen;
   const totalM     = totalMm / 1000;
   const totalMMargin = totalM * (1 + s.margin / 100);
   const tapePcs    = tapePerRow * rows;
   const usedW      = pcsPerRow * needW;
 
-  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, excessPcs, totalMm, usedW, totalM, totalMMargin, tapePcs };
+  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, partialPcs, totalMm, usedW, totalM, totalMMargin, tapePcs };
 }
 
 // ── 테이블 구조 렌더 (행 추가/삭제/로드 시만 호출) ──
@@ -795,8 +796,8 @@ function updateTableResults(results) {
     if (r) {
       pEl.textContent  = r.pcsPerRow;               pEl.className  = 'tbl-res';
       tlEl.textContent = r.cutLen.toLocaleString();  tlEl.className = 'tbl-res';
-      rEl.textContent  = r.excessPcs > 0 ? `${r.rows}장 (+${r.excessPcs}개 잔여)` : `${r.rows}장`;
-      rEl.className    = r.excessPcs > 0 ? 'tbl-res tbl-res-partial' : 'tbl-res';
+      rEl.textContent  = r.partialPcs > 0 ? `${r.rows}장 / ${r.partialPcs}개` : `${r.rows}장`;
+      rEl.className    = r.partialPcs > 0 ? 'tbl-res tbl-res-partial' : 'tbl-res';
       mEl.textContent  = r.totalMMargin.toFixed(2); mEl.className  = 'tbl-res amber';
     } else {
       pEl.textContent  = '—'; pEl.className  = 'tbl-res mute';
@@ -925,7 +926,7 @@ function renderCuttingOrder(results, s) {
       <div class="order-badge">${seq}</div>
       <div class="order-spec">
         <strong>H${p.h||'?'} / 링${p.ring} × ${p.length}L</strong> · ${p.qty}개
-        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.rows}장${r.excessPcs > 0 ? ` <span style="color:var(--amber);font-size:9px;">(+${r.excessPcs}개 잔여)</span>` : ''}
+        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.rows}장${r.partialPcs > 0 ? ` <span style="color:var(--amber);font-size:9px;">+${r.partialPcs}개 재고</span>` : ''}
         ${isSameGroup ? '<span class="group-tag">동시 재단 가능</span>' : ''}
       </div>
       <div class="order-val">${r.totalMMargin.toFixed(2)}M</div>
@@ -1007,7 +1008,7 @@ function renderCutDiagram(results, s) {
 
     // ⑤ 메인 라벨 (필터 구역 중앙) — 치수 텍스트만 크게, 링테이프는 별도 유지
     const fs = Math.max(12, Math.min(15, drawH * 0.32));
-    const rowsTxt = r.excessPcs > 0 ? `${r.rows}장 (+${r.excessPcs}잔)` : `${r.rows}장`;
+    const rowsTxt = r.partialPcs > 0 ? `${r.rows}장+${r.partialPcs}개` : `${r.rows}장`;
     const mainLabel = `<text x="${filterW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${p.length}L · ${r.pcsPerRow}개/폭 · ${rowsTxt}</text>`;
 
     // ⑥ 캡션 바 — 기존 vis-labels 정보 통합
@@ -1066,7 +1067,7 @@ function printWorkOrder() {
       <td>${p.qty}개</td>
       <td>${Math.round(r.needW)}mm</td>
       <td>${r.pcsPerRow}개/폭</td>
-      <td>${r.excessPcs > 0 ? `${r.rows}장 (+${r.excessPcs}개 잔여)` : `${r.rows}장`}</td>
+      <td>${r.partialPcs > 0 ? `${r.rows}장 / ${r.partialPcs}개` : `${r.rows}장`}</td>
       <td>${r.cutLen}mm</td>
       <td>${r.totalMMargin.toFixed(2)}M</td>
     </tr>`).join('');
