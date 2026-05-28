@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서진필터 재단 계산기 v3</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #F0F5F1;
+    --bg2:        #E4EDE5;
+    --bg3:        #D8E5DA;
+    --card:       #FFFFFF;
+    --border:     #C2D4C5;
+    --border2:    #9BBAA0;
+    --green:      #16A34A;
+    --green-dim:  #15803D;
+    --green-dark: #14532D;
+    --green-pale: #DCFCE7;
+    --amber:      #D97706;
+    --amber-dim:  #B45309;
+    --blue:       #2563EB;
+    --blue-dim:   #1D4ED8;
+    --blue-dark:  #1E40AF;
+    --red:        #DC2626;
+    --text:       #1C2E1F;
+    --text-dim:   #3A5C3E;
+    --text-mute:  #6B8B6E;
+    --mono:       'JetBrains Mono', monospace;
+    --sans:       'Noto Sans KR', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── 헤더 ── */
+  .header {
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    padding: 14px 28px; display: flex; align-items: center; gap: 14px;
+  }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--green-dark), var(--green));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px;
+  }
+  .header-title { font-size: 16px; font-weight: 700; }
+  .header-sub   { font-size: 10px; color: var(--text-mute); font-family: var(--mono); margin-top: 1px; }
+  .header-tag {
+    margin-left: auto; background: rgba(22,163,74,0.12); border: 1px solid rgba(22,163,74,0.35);
+    color: var(--green); font-size: 10px; font-weight: 500;
+    padding: 3px 10px; border-radius: 20px; font-family: var(--mono);
+  }
+
+  /* ── 레이아웃 ── */
+  .main {
+    max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px;
+    display: grid; grid-template-columns: 1fr 420px; gap: 20px; align-items: start;
+  }
+
+  /* ── 카드 ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 22px; margin-bottom: 16px;
+    animation: fadeUp 0.35s ease both;
+  }
+  .card:nth-child(2) { animation-delay: 0.06s; }
+  .card:nth-child(3) { animation-delay: 0.12s; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  .card-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .step-badge {
+    width: 22px; height: 22px; background: var(--green-dark); color: var(--green-pale);
+    border-radius: 5px; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; font-family: var(--mono); flex-shrink: 0;
+  }
+  .step-badge.amber { background: #92400E; color: #FDE68A; }
+  .card-title { font-size: 13px; font-weight: 700; }
+  .card-desc  { font-size: 10px; color: var(--text-mute); margin-left: auto; font-family: var(--mono); }
+
+  /* ── 폼 기본 ── */
+  .fg { display: flex; flex-direction: column; gap: 5px; }
+  .fl {
+    font-size: 10px; font-weight: 500; color: var(--text-dim);
+    display: flex; align-items: center; gap: 5px;
+  }
+  .fl .unit {
+    font-family: var(--mono); color: var(--text-mute); font-size: 9px;
+    background: var(--bg3); padding: 1px 5px; border-radius: 3px;
+  }
+  .fl .ref-tag {
+    font-family: var(--mono); color: var(--blue-dim); font-size: 9px;
+    background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.25);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .form-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.four  { grid-template-columns: repeat(4,1fr); }
+  .form-grid.five  { grid-template-columns: repeat(5,1fr); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+  input, select {
+    background: var(--bg3); border: 1.5px solid var(--border); border-radius: 8px;
+    padding: 9px 12px; font-size: 13px; font-family: var(--mono); color: var(--text);
+    outline: none; transition: all 0.2s; width: 100%;
+  }
+  input:focus, select:focus {
+    border-color: var(--green-dim); background: var(--bg2);
+    box-shadow: 0 0 0 3px rgba(21,128,61,0.15);
+  }
+  input::placeholder { color: var(--text-mute); font-size: 11px; }
+  input[readonly] {
+    color: var(--green); border-color: rgba(22,163,74,0.4);
+    background: rgba(22,163,74,0.07); cursor: default; font-weight: 700;
+  }
+  input[readonly]:focus { box-shadow: none; }
+
+  /* ── 빠른 선택 버튼 ── */
+  .quick-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+  .qbtn {
+    background: var(--bg3); border: 1.5px solid var(--border); color: var(--text-dim);
+    border-radius: 7px; padding: 5px 11px; font-family: var(--mono); font-size: 11px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .qbtn:hover  { border-color: var(--amber-dim); color: var(--amber); }
+  .qbtn.active { background: rgba(217,119,6,0.12); border-color: var(--amber-dim); color: var(--amber); font-weight: 700; }
+  .qbtn.green:hover  { border-color: var(--green-dim); color: var(--green); }
+  .qbtn.green.active { background: rgba(22,163,74,0.12); border-color: var(--green-dim); color: var(--green); font-weight: 700; }
+
+  /* ── 제품 테이블 ── */
+  .product-table-wrap { overflow-x: auto; margin-bottom: 12px; border-radius: 10px; border: 1px solid var(--border); }
+  .product-table {
+    width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px;
+    min-width: 680px;
+  }
+  .product-table th {
+    background: var(--bg3); color: var(--text-dim); font-weight: 600;
+    padding: 9px 10px; text-align: center; border-bottom: 1px solid var(--border);
+    white-space: nowrap; font-size: 10px; letter-spacing: 0.3px;
+  }
+  .product-table th.result-col { color: var(--green); background: rgba(22,163,74,0.07); }
+  .product-table td {
+    padding: 6px 6px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle;
+  }
+  .product-table tr:last-child td { border-bottom: none; }
+  .product-table tr:hover td { background: rgba(0,0,0,0.025); }
+  .product-table tr.focused-row td { background: rgba(22,163,74,0.08); }
+
+  .tbl-num {
+    color: var(--text-mute); font-size: 11px; font-weight: 700;
+    width: 28px; text-align: center;
+  }
+  .tbl-input {
+    background: transparent; border: 1px solid transparent; border-radius: 6px;
+    padding: 6px 8px; font-size: 12px; font-family: var(--mono); color: var(--text);
+    outline: none; width: 100%; text-align: center; transition: all 0.15s; min-width: 60px;
+  }
+  .tbl-input:focus { border-color: var(--green-dim); background: var(--bg3); box-shadow: 0 0 0 2px rgba(21,128,61,0.12); }
+  .tbl-input::placeholder { color: var(--text-mute); font-size: 10px; }
+  .tbl-res { color: var(--green); font-weight: 700; font-size: 13px; }
+  .tbl-res.amber { color: var(--amber); }
+  .tbl-res.mute  { color: var(--text-mute); }
+  .tbl-res-blue  { color: var(--blue) !important; }
+
+  .del-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-mute);
+    border-radius: 5px; padding: 4px 8px; font-size: 12px; cursor: pointer;
+    transition: all 0.15s; font-family: var(--mono);
+  }
+  .del-btn:hover { border-color: var(--red); color: var(--red); }
+
+  .total-row td { background: rgba(22,163,74,0.06); border-top: 1px solid var(--border2) !important; }
+  .total-label { color: var(--text-dim); font-size: 11px; font-weight: 700; text-align: right; padding-right: 8px; }
+  .total-val   { color: var(--green); font-size: 15px; font-weight: 700; }
+  .total-val.amber { color: var(--amber); }
+  .total-final-row td { background: rgba(217,119,6,0.07) !important; border-top: 2px solid var(--amber) !important; }
+  .tbl-res-partial { color: var(--amber) !important; font-size: 10px !important; }
+
+  .add-row-btn {
+    width: 100%; padding: 10px; background: var(--bg3); border: 1.5px dashed var(--border2);
+    color: var(--text-mute); border-radius: 8px; cursor: pointer; font-size: 12px;
+    font-family: var(--mono); transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .add-row-btn:hover { border-color: var(--green-dim); color: var(--green); }
+
+  /* ── 결과 패널 ── */
+  .result-panel { position: sticky; top: 20px; }
+
+  .fabric-vis {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 14px; overflow: hidden;
+  }
+  .vis-title { font-size: 10px; color: var(--text-mute); font-family: var(--mono); margin-bottom: 10px; }
+  .vis-strip {
+    height: 42px; background: linear-gradient(135deg, #D4EDD9, #C0DFC6);
+    border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; margin-bottom: 5px;
+  }
+  .vis-pcs { display: flex; height: 100%; }
+  .vis-piece {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-family: var(--mono); color: var(--green-dark);
+    border-right: 1px dashed rgba(22,163,74,0.4); font-weight: 700;
+  }
+  .vis-piece:last-child { border-right: none; }
+  .vis-remainder { background: rgba(220,38,38,0.12); border-left: 1px dashed var(--red) !important; color: var(--red) !important; }
+  .vis-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-mute); font-family: var(--mono); }
+
+  /* 요약 카드 */
+  .summary-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 18px; margin-bottom: 12px;
+  }
+  .sum-big-label { font-size: 10px; color: var(--text-mute); font-family: var(--mono); margin-bottom: 3px; }
+  .sum-big-val   { font-size: 38px; font-weight: 700; font-family: var(--mono); color: var(--green); line-height: 1; }
+  .sum-big-unit  { font-size: 15px; color: var(--text-dim); font-family: var(--mono); }
+  .sum-big-sub   { font-size: 11px; color: var(--text-mute); margin-top: 5px; }
+
+  /* 제품별 결과 목록 */
+  .prod-result-list { margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .prod-result-item {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; display: grid; grid-template-columns: auto 1fr auto; gap: 8px; align-items: center;
+  }
+  .prod-result-item.focused { border-color: rgba(22,163,74,0.5); background: rgba(22,163,74,0.07); }
+  .pri-num { font-size: 10px; color: var(--text-mute); font-family: var(--mono); }
+  .pri-spec { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+  .pri-spec strong { color: var(--text); }
+  .pri-val { font-size: 15px; font-weight: 700; font-family: var(--mono); color: var(--green); text-align: right; }
+  .pri-val .sub { font-size: 10px; color: var(--text-mute); font-weight: 400; }
+
+  /* 경고 */
+  .alert-box {
+    background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.25);
+    border-radius: 8px; padding: 10px 12px; font-size: 11px; color: var(--amber);
+    margin-bottom: 12px; display: none; font-family: var(--mono); line-height: 1.7; white-space: pre-line;
+  }
+  .alert-box.show { display: block; }
+
+  /* 버튼 */
+  .btn {
+    width: 100%; padding: 11px; border-radius: 9px; border: none;
+    cursor: pointer; font-size: 13px; font-weight: 700;
+    font-family: var(--sans); transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 7px;
+  }
+  .btn-primary { background: linear-gradient(135deg,var(--green-dark),var(--green-dim)); color:#fff; box-shadow:0 4px 14px rgba(22,163,74,0.3); }
+  .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(22,163,74,0.4); }
+  .btn-blue { background: linear-gradient(135deg,var(--blue-dark),var(--blue-dim)); color:#fff; }
+  .btn-blue:hover { transform:translateY(-1px); }
+  .btn-ghost { background:var(--bg3); color:var(--text-dim); border:1px solid var(--border); }
+  .btn-ghost:hover { background:var(--bg2); color:var(--text); }
+
+  /* 프로파일 */
+  .profile-list { display: flex; flex-direction: column; gap: 7px; }
+  .profile-item {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: 9px;
+    padding: 10px 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .profile-info { flex: 1; }
+  .profile-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .profile-spec { font-size: 10px; color: var(--text-mute); font-family: var(--mono); }
+  .profile-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-dim);
+    border-radius: 5px; padding: 4px 9px; font-size: 10px; cursor: pointer;
+    font-family: var(--mono); transition: all 0.15s;
+  }
+  .profile-btn:hover { border-color: var(--green-dim); color: var(--green); }
+  .profile-btn.del:hover { border-color: var(--red); color: var(--red); }
+  .profile-empty { font-size: 11px; color: var(--text-mute); font-family: var(--mono); padding: 14px; text-align: center; }
+
+  /* 재단 규격 카드 */
+  .cut-spec-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px; margin-bottom: 12px;
+  }
+  .cut-spec-title {
+    font-size: 10px; color: var(--text-mute); font-family: var(--mono);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .cut-spec-table {
+    width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 11px;
+  }
+  .cut-spec-table th {
+    color: var(--text-mute); font-weight: 600; font-size: 9px;
+    padding: 5px 8px; text-align: center; border-bottom: 1px solid var(--border);
+    letter-spacing: 0.3px;
+  }
+  .cut-spec-table th.w-col { color: var(--blue); }
+  .cut-spec-table th.l-col { color: var(--green); }
+  .cut-spec-table td {
+    padding: 7px 8px; text-align: center; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .cut-spec-table tr:last-child td { border-bottom: none; }
+  .cut-spec-val-w { color: var(--blue); font-weight: 700; font-size: 13px; }
+  .cut-spec-val-l { color: var(--green); font-weight: 700; font-size: 18px; }
+  .cut-spec-label { color: var(--text-dim); font-size: 10px; }
+  .cut-spec-num   { color: var(--text-mute); font-size: 10px; font-weight: 700; }
+
+  /* 토스트 */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(70px);
+    background: var(--green-dark); color: var(--green-pale);
+    padding: 11px 22px; border-radius: 50px; font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999; white-space: nowrap; font-family: var(--sans);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* 반응형 */
+  @media (max-width: 860px) {
+    .main { grid-template-columns: 1fr; }
+    .result-panel { position: static; }
+    .form-grid.four { grid-template-columns: 1fr 1fr; }
+    .form-grid.five { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  /* ── 인쇄 ── */
+  /* ── 롤 수 표시 ── */
+  .roll-bar {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:rgba(37,99,235,0.07); border:1px solid rgba(37,99,235,0.2);
+    border-radius:8px; padding:10px 14px; margin-top:12px;
+    font-family:var(--mono); font-size:11px; color:var(--blue);
+  }
+  .roll-bar strong { font-size:20px; font-weight:700; }
+  .roll-bar input {
+    width:90px; font-size:12px; padding:6px 10px;
+    border-color:rgba(37,99,235,0.3); background:rgba(37,99,235,0.07); color:var(--blue);
+  }
+  .roll-bar input:focus { box-shadow:0 0 0 3px rgba(37,99,235,0.15); border-color:var(--blue-dim); }
+
+  /* ── 재단 순서 카드 ── */
+  .order-card {
+    background:var(--bg2); border:1px solid var(--border); border-radius:12px;
+    padding:16px; margin-bottom:12px;
+  }
+  .order-title {
+    font-size:11px; color:var(--text-mute); font-family:var(--mono);
+    margin-bottom:12px; display:flex; align-items:center; gap:8px;
+  }
+  .order-list { display:flex; flex-direction:column; gap:6px; }
+  .order-item {
+    display:flex; align-items:center; gap:10px;
+    background:var(--bg3); border:1px solid var(--border);
+    border-radius:8px; padding:9px 12px;
+  }
+  .order-item.same-group { border-color:rgba(217,119,6,0.35); background:rgba(217,119,6,0.06); }
+  .order-badge {
+    min-width:22px; height:22px; border-radius:50%;
+    background:var(--green-dark); color:var(--green-pale);
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:700; font-family:var(--mono); flex-shrink:0;
+  }
+  .order-spec { flex:1; font-family:var(--mono); font-size:11px; color:var(--text-dim); line-height:1.6; }
+  .order-spec strong { color:var(--text); }
+  .order-val { font-family:var(--mono); font-size:12px; font-weight:700; color:var(--green); text-align:right; }
+  .group-tag {
+    font-size:9px; padding:1px 6px; border-radius:3px;
+    background:rgba(217,119,6,0.12); color:var(--amber);
+    border:1px solid rgba(217,119,6,0.3); font-family:var(--mono); white-space:nowrap;
+  }
+  .order-empty { font-size:11px; color:var(--text-mute); font-family:var(--mono); text-align:center; padding:12px; }
+
+  /* ── 작업 지시서 (인쇄 전용) ── */
+  #work-order { display:none; }
+  @media print {
+    @page { margin: 8mm 10mm; }
+    body { background:#fff !important; color:#111 !important; }
+    .main-app { display:none !important; }
+    #work-order {
+      display:block !important;
+      font-family:'Noto Sans KR', sans-serif;
+      color:#111; padding:0;
+    }
+    .wo-header { text-align:center; border-bottom:2px solid #111; padding-bottom:6px; margin-bottom:8px; }
+    .wo-header h1 { font-size:17px; font-weight:900; margin-bottom:2px; }
+    .wo-header p  { font-size:10px; color:#555; }
+    .wo-section-title { font-size:11px; font-weight:700; border-left:3px solid #111; padding-left:6px; margin:8px 0 4px; }
+    .wo-table { width:100%; border-collapse:collapse; font-size:10px; margin-bottom:8px; }
+    .wo-table th { background:#f0f0f0; border:1px solid #ccc; padding:4px 6px; text-align:center; font-weight:700; }
+    .wo-table td { border:1px solid #ccc; padding:4px 6px; text-align:center; }
+    .wo-table tr:nth-child(even) td { background:#fafafa; }
+    .wo-total-row td { background:#e8f5e9 !important; font-weight:700; }
+    .wo-footer { text-align:center; margin-top:8px; font-size:9px; color:#999; border-top:1px solid #ccc; padding-top:6px; }
+    #wo-diagram { page-break-inside:avoid; }
+    #wo-diagram svg { width:100% !important; max-width:100% !important; max-height:55vh !important; height:auto !important; }
+  }
+
+  /* ── OCR 모달 ── */
+  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:999;display:flex;align-items:center;justify-content:center;padding:16px; }
+  .modal-box { background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:22px;width:min(440px,100%);max-height:90vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.15); }
+  .modal-title { font-size:15px;font-weight:700;margin-bottom:16px;color:var(--green);display:flex;align-items:center;gap:8px; }
+  .ocr-drop-zone { border:2px dashed var(--border2);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;color:var(--text-mute);font-size:12px;transition:border-color .2s,background .2s;user-select:none; }
+  .ocr-drop-zone:hover,.ocr-drop-zone.drag-over { border-color:var(--green-dim);background:rgba(74,222,128,.04); }
+  .ocr-table { width:100%;border-collapse:collapse;font-size:12px;margin-top:4px; }
+  .ocr-table th,.ocr-table td { padding:6px 8px;border:1px solid var(--border);text-align:center; }
+  .ocr-table th { background:var(--bg3);font-weight:600;color:var(--text-dim); }
+  .ocr-table td { color:var(--text); }
+  .ocr-table input[type=checkbox] { accent-color:var(--green);width:15px;height:15px;cursor:pointer; }
+  .ocr-result-label { font-size:11px;font-weight:600;margin-bottom:6px;color:var(--text-mute); }
+  .ocr-spinner { display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .btn-outline { background:transparent;border:1px solid var(--border2);color:var(--text-dim);font-size:11px;padding:5px 12px;border-radius:7px;cursor:pointer;font-family:var(--sans); }
+  .btn-outline:hover { border-color:var(--green-dim);color:var(--green); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">✂️</div>
+  <div>
+    <div class="header-title">서진필터 재단 계산기</div>
+    <div class="header-sub">BAG FILTER CUTTING CALCULATOR v3.0 — 다중 제품 지원</div>
+  </div>
+  <div class="header-tag">내부 전용</div>
+</div>
+
+<div class="main main-app">
+<div><!-- 왼쪽 -->
+
+  <!-- STEP 01: 공통 설정 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge">01</div>
+      <div class="card-title">공통 원단 설정</div>
+      <div class="card-desc">전 제품 공통 적용</div>
+    </div>
+
+    <!-- 원단 폭 -->
+    <label class="fl" style="margin-bottom:6px;">원단 폭 빠른 선택</label>
+    <div class="quick-btns">
+      <div class="qbtn green active" onclick="setFabric(this,2150)">2,150mm</div>
+      <div class="qbtn green" onclick="setFabric(this,2000)">2,000mm</div>
+      <div class="qbtn green" onclick="setFabric(this,1800)">1,800mm</div>
+      <div class="qbtn green" onclick="setFabric(this,1500)">1,500mm</div>
+      <div class="qbtn green" onclick="setFabric(this,0)">직접입력</div>
+    </div>
+    <div class="fg" style="margin-bottom:14px;">
+      <label class="fl">원단 폭 <span class="unit">mm</span></label>
+      <input type="number" id="fabric_w" value="2150" oninput="onFabricInput();calc()">
+    </div>
+
+    <div class="form-grid" style="grid-template-columns:repeat(6,1fr);gap:10px;">
+      <div class="fg">
+        <label class="fl">본체 시접 <span class="unit">mm</span></label>
+        <input type="number" id="seam_body" value="25" oninput="calc()">
+      </div>
+      <div class="fg">
+        <label class="fl">상부 스냅링 <span class="unit">mm</span></label>
+        <input type="number" id="seam_snap" value="100" oninput="calc()">
+      </div>
+      <div class="fg">
+        <label class="fl">하부 덧단 <span class="unit">mm</span></label>
+        <input type="number" id="seam_hem" value="0" oninput="calc()" placeholder="0">
+      </div>
+      <div class="fg">
+        <label class="fl">링테이프 폭 <span class="unit">mm</span></label>
+        <input type="number" id="tape_w" value="67" oninput="calc()">
+      </div>
+      <div class="fg">
+        <label class="fl">여유율 <span class="unit">%</span></label>
+        <input type="number" id="margin_val" value="5" min="0" max="50" oninput="onMarginInput();calcOnly()">
+      </div>
+      <div class="fg">
+        <label class="fl">롤 1개 길이 <span class="unit">m</span></label>
+        <input type="number" id="roll_len" value="100" oninput="calcOnly()" placeholder="100">
+      </div>
+    </div>
+
+    <!-- 시접 빠른 선택 -->
+    <div style="margin-top:12px; display:flex; gap:16px; flex-wrap:wrap;">
+      <div>
+        <label class="fl" style="margin-bottom:5px;">본체 시접 선택</label>
+        <div class="quick-btns" style="margin-bottom:0">
+          <div class="qbtn active" onclick="setVal('seam_body',this,25)">25</div>
+          <div class="qbtn" onclick="setVal('seam_body',this,30)">30</div>
+        </div>
+      </div>
+      <div>
+        <label class="fl" style="margin-bottom:5px;">상부 스냅링 선택</label>
+        <div class="quick-btns" style="margin-bottom:0">
+          <div class="qbtn" onclick="setVal('seam_snap',this,50)">50</div>
+          <div class="qbtn active" onclick="setVal('seam_snap',this,100)">100</div>
+          <div class="qbtn" onclick="setVal('seam_snap',this,150)">150</div>
+        </div>
+      </div>
+      <div>
+        <label class="fl" style="margin-bottom:5px;">여유율 선택</label>
+        <div class="quick-btns" id="margin-btns" style="margin-bottom:0">
+          <div class="qbtn" onclick="setMargin(this,0)">0%</div>
+          <div class="qbtn" onclick="setMargin(this,3)">3%</div>
+          <div class="qbtn active" onclick="setMargin(this,5)">5%</div>
+          <div class="qbtn" onclick="setMargin(this,8)">8%</div>
+          <div class="qbtn" onclick="setMargin(this,10)">10%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 02: 제품 목록 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge">02</div>
+      <div class="card-title">제품 목록</div>
+      <div class="card-desc" id="prod-count-badge">0개 제품</div>
+      <button class="btn-outline" onclick="openOcrModal()" style="margin-left:auto;display:flex;align-items:center;gap:5px;">
+        📷 발주서 불러오기
+      </button>
+    </div>
+
+    <div class="product-table-wrap">
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th style="width:30px;">No</th>
+            <th>H<br><span style="font-weight:400;color:var(--text-mute)">내경</span></th>
+            <th class="result-col" style="color:var(--blue);">재단 폭<br><span style="font-weight:400">mm</span></th>
+            <th>링치수<br><span style="font-weight:400;color:var(--text-mute)">mm ★</span></th>
+            <th>길이 L<br><span style="font-weight:400;color:var(--text-mute)">mm ★</span></th>
+            <th>수량<br><span style="font-weight:400;color:var(--text-mute)">개 ★</span></th>
+            <th class="result-col">취수<br><span style="font-weight:400">개/폭</span></th>
+            <th class="result-col" style="color:var(--green);">재단 길이<br><span style="font-weight:400">mm</span></th>
+            <th class="result-col" style="color:var(--green);">장수<br><span style="font-weight:400">장</span></th>
+            <th class="result-col">원단<br><span style="font-weight:400">m</span></th>
+            <th style="width:32px;"></th>
+          </tr>
+        </thead>
+        <tbody id="prod-tbody"></tbody>
+        <tfoot id="prod-tfoot"></tfoot>
+      </table>
+    </div>
+
+    <button class="add-row-btn" onclick="addProduct()">＋ 제품 추가</button>
+  </div>
+
+  <!-- STEP 03: 저장 / 불러오기 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge amber">03</div>
+      <div class="card-title">전체 규격 저장 / 불러오기</div>
+      <div class="card-desc">설정 + 제품목록 통째로 저장</div>
+    </div>
+    <button class="btn btn-ghost" style="margin-bottom:12px;" onclick="saveSession()">💾 현재 목록 전체 저장</button>
+    <div class="profile-list" id="profile-list">
+      <div class="profile-empty">저장된 목록이 없습니다</div>
+    </div>
+  </div>
+
+</div><!-- /왼쪽 -->
+
+<!-- 오른쪽 결과 패널 -->
+<div class="result-panel">
+
+  <!-- 원단 폭 시각화 (포커스 제품 기준) — 재단 평면도에 통합됨 -->
+  <div class="fabric-vis" style="display:none;">
+    <div class="vis-title" id="vis-title">▸ 원단 폭 단면 (폭 방향 레이아웃)</div>
+    <div class="vis-strip"><div class="vis-pcs" id="vis-pcs"></div></div>
+    <div class="vis-labels"><span id="vis-left">원단 폭</span><span id="vis-right">잔여</span></div>
+  </div>
+
+  <!-- 경고 -->
+  <div class="alert-box" id="alert-box"></div>
+
+  <!-- 재단 순서 추천 -->
+  <div class="order-card" id="order-card" style="display:none;">
+    <div class="order-title">✂️ 재단 순서 추천 <span style="color:var(--text-mute);font-size:9px;margin-left:4px;">수량 많은 순 → 중간 → 적은 순</span></div>
+    <div class="order-list" id="order-list"></div>
+  </div>
+
+  <!-- 재단 평면도 -->
+  <div class="order-card" id="cut-diagram-card" style="display:none;">
+    <div class="order-title" style="display:flex;align-items:center;gap:6px;">
+      📐 재단 평면도
+      <span style="color:var(--text-mute);font-size:9px;">원단 폭 기준 실제 배치</span>
+      <span id="cut-diagram-scale" style="color:var(--text-mute);font-size:9px;margin-left:auto;"></span>
+    </div>
+    <div id="cut-diagram-svg" style="overflow-x:auto;margin-top:8px;"></div>
+  </div>
+
+  <button class="btn btn-primary" onclick="copyResult()">📋 결과 복사</button>
+  <button class="btn btn-blue"    onclick="printWorkOrder()">🖨️ 작업 지시서 인쇄</button>
+  <button class="btn btn-ghost"   onclick="resetAll()">🔄 초기화</button>
+</div>
+
+</div><!-- /main -->
+
+<!-- 작업 지시서 (인쇄 전용) -->
+<div id="work-order">
+  <div class="wo-header">
+    <h1>서진필터 재단 작업 지시서</h1>
+    <p id="wo-date"></p>
+  </div>
+  <div class="wo-section-title">제품별 재단 내역</div>
+  <table class="wo-table">
+    <thead>
+      <tr>
+        <th>No</th><th>규격 (H × L)</th><th>링치수</th><th>수량</th>
+        <th>재단폭(mm)</th><th>취수</th><th>장수</th><th>재단길이</th><th>원단량(m)</th>
+      </tr>
+    </thead>
+    <tbody id="wo-tbody"></tbody>
+    <tfoot id="wo-tfoot"></tfoot>
+  </table>
+  <div class="wo-section-title">재단 평면도</div>
+  <div id="wo-diagram"></div>
+  <div class="wo-footer">서진필터 재단 계산기 v3 · 출력일: <span id="wo-print-date"></span></div>
+</div>
+
+<!-- 발주서 AI 인식 모달 -->
+<div id="ocr-modal" style="display:none;" class="modal-overlay" onclick="if(event.target===this)closeOcrModal()">
+  <div class="modal-box">
+    <div class="modal-title">📷 발주서 자동 인식 <span style="font-size:10px;color:var(--text-mute);font-weight:400">(Claude AI)</span></div>
+
+    <!-- API 키 -->
+    <div class="fg" style="margin-bottom:12px;">
+      <label class="fl">Anthropic API 키 <span class="unit">최초 1회 입력 후 저장됨</span></label>
+      <input type="password" id="ocr-apikey" placeholder="sk-ant-..." style="font-size:11px;letter-spacing:.05em;">
+    </div>
+
+    <!-- 이미지 업로드 -->
+    <div id="ocr-drop" class="ocr-drop-zone"
+      onclick="document.getElementById('ocr-file').click()"
+      ondragover="event.preventDefault();this.classList.add('drag-over')"
+      ondragleave="this.classList.remove('drag-over')"
+      ondrop="onOcrDrop(event)">
+      <div id="ocr-drop-text">📂 클릭하거나 발주서 사진을 여기에 끌어다 놓기<br><span style="font-size:10px;opacity:.6;margin-top:4px;display:block">JPG · PNG · HEIC 지원</span></div>
+      <img id="ocr-preview" style="display:none;max-width:100%;max-height:200px;border-radius:8px;margin-top:10px;object-fit:contain;">
+      <input type="file" id="ocr-file" accept="image/*" style="display:none" onchange="onOcrFileSelect(event)">
+    </div>
+
+    <!-- 분석 버튼 -->
+    <button class="btn btn-green" id="ocr-analyze-btn" onclick="runOcrAnalysis()" style="width:100%;margin:12px 0 8px;">
+      🔍 AI 분석
+    </button>
+
+    <!-- 추출 결과 -->
+    <div id="ocr-result" style="display:none;">
+      <div class="ocr-result-label">추출된 제품 목록 — 적용할 항목을 선택하세요</div>
+      <table class="ocr-table">
+        <thead><tr><th>✓</th><th>링치수 Ø</th><th>길이 L (mm)</th><th>수량 (EA)</th></tr></thead>
+        <tbody id="ocr-tbody"></tbody>
+      </table>
+      <button class="btn btn-blue" onclick="applyOcrResult()" style="width:100%;margin-top:10px;">✅ 선택 항목 적용</button>
+    </div>
+
+    <button class="btn" onclick="closeOcrModal()" style="width:100%;margin-top:8px;background:var(--bg3);color:var(--text-dim);">닫기</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 상태 ─────────────────────────────────────────
+let products = [];
+let nextId   = 1;
+let focusId  = null; // 시각화 기준 제품
+
+// ── 초기 제품 3행 ────────────────────────────────
+function initProducts() {
+  products = [];
+  for (let i = 0; i < 3; i++) addProduct(false);
+  focusId = products[0].id;
+}
+
+function addProduct(doCalc = true) {
+  products.push({ id: nextId++, h:'', hole:'', ring:'', length:'', qty:'' });
+  if (doCalc) { renderTableStructure(); calcOnly(); }
+}
+
+function removeProduct(id) {
+  if (products.length <= 1) { showToast('⚠️ 최소 1개 이상 필요합니다'); return; }
+  products = products.filter(p => p.id !== id);
+  if (focusId === id) focusId = products[0]?.id ?? null;
+  renderTableStructure();
+  calcOnly();
+}
+
+// 입력 중에 호출 — 구조 재렌더 없이 데이터만 갱신
+function updateField(id, field, val) {
+  const p = products.find(x => x.id === id);
+  if (p) p[field] = val;
+  focusId = id;
+  calcOnly(); // 입력 DOM은 건드리지 않음
+}
+
+// ── 숫자 파싱 헬퍼 (0 입력 허용) ────────────────
+function getFloat(id, def = 0) {
+  const v = parseFloat(document.getElementById(id).value);
+  return isNaN(v) ? def : v;
+}
+
+// ── 공통 설정 읽기 ───────────────────────────────
+function getShared() {
+  return {
+    fabricW : getFloat('fabric_w',    0),
+    seamB   : getFloat('seam_body',   0),
+    snapAdd : getFloat('seam_snap', 100),   // 빈칸이면 100, 0입력은 0으로 정확히 반영
+    hemAdd  : getFloat('seam_hem',    0),
+    tapeW   : getFloat('tape_w',     67),
+    margin  : getFloat('margin_val',  0),
+    rollLen : getFloat('roll_len',  100),
+  };
+}
+
+// ── 제품 1개 계산 ────────────────────────────────
+function calcOne(p, s) {
+  const ring   = parseFloat(p.ring)   || 0;
+  const length = parseFloat(p.length) || 0;
+  const qty    = parseInt(p.qty)      || 0;
+  if (!ring || !length || !qty) return null;
+
+  const circ      = ring * Math.PI;
+  const needW     = circ + s.seamB;
+  const pcsPerRow = s.fabricW > 0 ? Math.floor(s.fabricW / needW) : 0;
+  const remainW   = s.fabricW > 0 ? s.fabricW - pcsPerRow * needW : 0;
+  const tapePerRow= remainW >= s.tapeW ? Math.floor(remainW / s.tapeW) : 0;
+  const cutLen     = length + s.snapAdd + s.hemAdd;
+  const fullRows   = pcsPerRow > 0 ? Math.floor(qty / pcsPerRow) : 0;
+  const partialPcs = pcsPerRow > 0 ? qty % pcsPerRow : 0;  // 재고 활용 개수 (0이면 딱 맞음)
+  const rows       = fullRows;                              // 발주 기준 = 정장 수 (스크랩은 제외)
+  const totalMm    = rows * cutLen;
+  const totalM     = totalMm / 1000;
+  const totalMMargin = totalM * (1 + s.margin / 100);
+  const tapePcs    = tapePerRow * rows;
+  const usedW      = pcsPerRow * needW;
+
+  return { ring, length, qty, circ, needW, pcsPerRow, remainW, tapePerRow, cutLen, rows, partialPcs, totalMm, usedW, totalM, totalMMargin, tapePcs };
+}
+
+// ── 테이블 구조 렌더 (행 추가/삭제/로드 시만 호출) ──
+function renderTableStructure() {
+  const tbody = document.getElementById('prod-tbody');
+  tbody.innerHTML = products.map((p, i) => `
+    <tr id="tr-${p.id}" class="${p.id === focusId ? 'focused-row' : ''}" onclick="setFocusRow(${p.id})">
+      <td class="tbl-num">${String(i+1).padStart(2,'0')}</td>
+      <td><input class="tbl-input" type="number" value="${p.h}"      placeholder="예)162"
+          oninput="updateField(${p.id},'h',this.value)"></td>
+      <td id="r-tw-${p.id}"   class="tbl-res mute">—</td>
+      <td><input class="tbl-input" type="number" value="${p.ring}"   placeholder="156"
+          oninput="updateField(${p.id},'ring',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td><input class="tbl-input" type="number" value="${p.length}" placeholder="3000"
+          oninput="updateField(${p.id},'length',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td><input class="tbl-input" type="number" value="${p.qty}"    placeholder="100"
+          oninput="updateField(${p.id},'qty',this.value)" style="border-color:rgba(74,222,128,0.25)"></td>
+      <td id="r-pcs-${p.id}"  class="tbl-res mute">—</td>
+      <td id="r-tlen-${p.id}" class="tbl-res mute">—</td>
+      <td id="r-rows-${p.id}" class="tbl-res mute">—</td>
+      <td id="r-m-${p.id}"   class="tbl-res mute">—</td>
+      <td><button class="del-btn" onclick="event.stopPropagation();removeProduct(${p.id})">✕</button></td>
+    </tr>`).join('');
+}
+
+// ── 결과 셀만 갱신 (입력 DOM 건드리지 않음) ─────────
+function updateTableResults(results) {
+  const s = getShared();
+  results.forEach(({ p, r }) => {
+    const pEl  = document.getElementById(`r-pcs-${p.id}`);
+    const rEl  = document.getElementById(`r-rows-${p.id}`);
+    const mEl  = document.getElementById(`r-m-${p.id}`);
+    const tlEl = document.getElementById(`r-tlen-${p.id}`);
+    const twEl = document.getElementById(`r-tw-${p.id}`);
+    if (!pEl) return;
+
+    // 재단폭: 링치수만 입력되면 즉시 표시 (수량·길이 불필요)
+    const ring = parseFloat(p.ring) || 0;
+    if (ring > 0) {
+      const needW = ring * Math.PI + s.seamB;
+      twEl.textContent = Math.round(needW);
+      twEl.className   = 'tbl-res tbl-res-blue';
+    } else {
+      twEl.textContent = '—'; twEl.className = 'tbl-res mute';
+    }
+
+    if (r) {
+      pEl.textContent  = r.pcsPerRow;               pEl.className  = 'tbl-res';
+      tlEl.textContent = r.cutLen.toLocaleString();  tlEl.className = 'tbl-res';
+      rEl.textContent  = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
+      rEl.className    = r.partialPcs > 0 ? 'tbl-res tbl-res-partial' : 'tbl-res';
+      mEl.textContent  = r.totalMMargin.toFixed(2); mEl.className  = 'tbl-res amber';
+    } else {
+      pEl.textContent  = '—'; pEl.className  = 'tbl-res mute';
+      tlEl.textContent = '—'; tlEl.className = 'tbl-res mute';
+      rEl.textContent  = '—'; rEl.className  = 'tbl-res mute';
+      mEl.textContent  = '—'; mEl.className  = 'tbl-res mute';
+    }
+    // focused-row 하이라이트
+    const tr = document.getElementById(`tr-${p.id}`);
+    if (tr) tr.className = p.id === focusId ? 'focused-row' : '';
+  });
+}
+
+// ── tfoot 합계 갱신 ──────────────────────────────
+function renderTfoot(results) {
+  const tfoot = document.getElementById('prod-tfoot');
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { tfoot.innerHTML = ''; return; }
+  const grandM        = valid.reduce((a, e) => a + e.r.totalM,       0);
+  const grandMg       = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const sumCutLen     = valid.reduce((a, e) => a + e.r.cutLen,        0);
+  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
+  const s       = getShared();
+  const sumRows = valid.reduce((a, e) => a + e.r.rows, 0);
+  const rolls   = s.rollLen > 0 ? Math.ceil(grandMg / s.rollLen) : null;
+  const rollTxt = rolls
+    ? `<span style="color:var(--blue);font-weight:600;font-size:10px;margin-left:10px;">🧵 ${rolls}롤 (${s.rollLen}m 기준)</span>`
+    : '';
+  tfoot.innerHTML = `
+    <tr class="total-row">
+      <td colspan="7" class="total-label">합계 ${valid.length}종 · ${totalQty}개 · 총 ${sumRows}장</td>
+      <td class="total-val" style="color:var(--green-dim);font-size:12px;text-align:center;">${sumCutLen.toLocaleString()}</td>
+      <td></td>
+      <td class="total-val" style="text-align:right;">${grandM.toFixed(2)}<span style="font-size:9px;font-weight:600;margin-left:2px">M</span></td><td></td>
+    </tr>
+    <tr class="total-row total-final-row">
+      <td colspan="9" class="total-label" style="font-size:11px;padding:10px 8px;">
+        ✅ 최종 발주량 (여유 ${s.margin}% 포함)${rollTxt}
+      </td>
+      <td class="total-val amber" style="font-size:13px;font-weight:800;text-align:right;">${grandMg.toFixed(2)}<span style="font-size:9px;font-weight:600;margin-left:2px">M</span></td>
+      <td></td>
+    </tr>`;
+}
+
+// ── 결과만 재계산 (입력 DOM 보존) ────────────────
+function calcOnly() {
+  const s = getShared();
+  const results = products.map(p => ({ p, r: calcOne(p, s) }));
+
+  updateTableResults(results);
+  renderTfoot(results);
+
+  // 경고
+  const alerts = [];
+  results.forEach(({ p, r }, i) => {
+    if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
+    if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
+  });
+  if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
+  const alertEl = document.getElementById('alert-box');
+  alertEl.textContent = alerts.join('\n');
+  alertEl.classList.toggle('show', alerts.length > 0);
+
+  // 뱃지
+  document.getElementById('prod-count-badge').textContent =
+    `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
+
+  // 재단 순서 추천
+  renderCuttingOrder(results, s);
+
+  // 재단 평면도
+  renderCutDiagram(results, s);
+}
+
+// ── 재단 규격 카드 ───────────────────────────────
+function renderCutSpec(results) {
+  const card = document.getElementById('cut-spec-card');
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const s = getShared();
+
+  document.getElementById('cut-spec-tbody').innerHTML = valid.map(({ p, r }, i) => {
+    // 재단치수길이 공식: 필터길이 + 스냅링 [+ 덧단] = cutLen
+    const parts = [p.length];
+    if (s.snapAdd) parts.push(s.snapAdd);
+    if (s.hemAdd)  parts.push(s.hemAdd);
+    const formula = parts.join(' + ');
+
+    return `<tr>
+      <td class="cut-spec-num">${String(i+1).padStart(2,'0')}</td>
+      <td class="cut-spec-label">H${p.h||'?'} / <strong style="color:var(--text)">${p.ring}</strong></td>
+      <td class="cut-spec-val-w">${Math.round(r.needW)}</td>
+      <td class="cut-spec-label">${r.rows}장</td>
+      <td class="cut-spec-val-l">
+        <div style="font-size:10px;color:var(--text-mute);font-weight:400;margin-bottom:2px;">${formula}</div>
+        = ${r.cutLen.toLocaleString()}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── 재단 순서 추천 ───────────────────────────────
+function renderCuttingOrder(results, s) {
+  const orderCard = document.getElementById('order-card');
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { orderCard.style.display = 'none'; return; }
+  orderCard.style.display = 'block';
+
+  // 수량 내림차순 정렬 (많은 수량 → 중간 → 적은 수량)
+  const sorted = [...valid].sort((a, b) => b.p.qty - a.p.qty);
+
+  // 동시 재단 가능 태깅 (needW가 같은 제품끼리)
+  const groups = {};
+  sorted.forEach(e => {
+    const key = e.r.needW.toFixed(1);
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+
+  let seq = 0;
+  const html = sorted.map((e, idx) => {
+    const { p, r } = e;
+    const isSameGroup = groups[r.needW.toFixed(1)].length > 1;
+    seq = idx + 1;
+    return `<div class="order-item ${isSameGroup ? 'same-group' : ''}">
+      <div class="order-badge">${seq}</div>
+      <div class="order-spec">
+        <strong>H${p.h||'?'} / 링${p.ring} × ${p.length}L</strong> · ${p.qty}개
+        <br>필요폭 ${r.needW.toFixed(1)}mm · ${r.pcsPerRow}개/폭 · ${r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : r.rows}${r.partialPcs > 0 ? ` <span style="color:var(--amber);font-size:9px;">+${r.partialPcs}개 재고</span>` : ''}
+        ${isSameGroup ? '<span class="group-tag">동시 재단 가능</span>' : ''}
+      </div>
+      <div class="order-val">${r.totalMMargin.toFixed(2)}M</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('order-list').innerHTML = html;
+}
+
+// ── 재단 평면도 SVG (원단 폭 단면 통합) ─────────────
+function renderCutDiagram(results, s) {
+  const card = document.getElementById('cut-diagram-card');
+  const valid = results.filter(e => e.r && e.r.pcsPerRow > 0);
+  if (!valid.length || s.fabricW <= 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  // 재단 순서(needW 내림차순) 정렬
+  const sorted = [...valid].sort((a, b) => b.r.needW - a.r.needW);
+
+  const SVG_W  = 560;
+  const CAP_H  = 18;                               // 캡션 바 높이(px)
+  const scaleX = SVG_W / s.fabricW;               // mm → px (X축)
+
+  // Y축 스케일
+  const totalCutMM = sorted.reduce((a, e) => a + e.r.cutLen * e.r.rows, 0);
+  const scaleY = Math.min(520 / Math.max(totalCutMM, 1), 0.3);
+
+  // 색상 팔레트 (라이트 테마 5색)
+  const PALETTE = [
+    { fill:'#DCFCE7', stroke:'#16A34A', text:'#14532D' },
+    { fill:'#DBEAFE', stroke:'#2563EB', text:'#1E40AF' },
+    { fill:'#FCE7F3', stroke:'#DB2777', text:'#831843' },
+    { fill:'#F3E8FF', stroke:'#9333EA', text:'#581C87' },
+    { fill:'#FFEDD5', stroke:'#EA580C', text:'#7C2D12' },
+  ];
+
+  // 각 구간(band) 계산
+  let curY = 0;
+  const bands = sorted.map((e, i) => {
+    const drawH = Math.max(e.r.cutLen * e.r.rows * scaleY, 50); // 도면 높이 (최소 50px, 텍스트 공간)
+    const bandH = drawH + CAP_H;                                 // 전체 높이
+    const b = { e, y: curY, drawH, bandH, color: PALETTE[i % PALETTE.length] };
+    curY += bandH;
+    return b;
+  });
+  const svgH = curY + 1;
+
+  // 각 band SVG 생성
+  const bandsSvg = bands.map(({ e, y, drawH, bandH, color }) => {
+    const { r, p } = e;
+
+    // X축 구역 분리 (mm → px)
+    const filterW  = r.pcsPerRow * r.needW * scaleX;    // 필터 구역
+    const tapeZW   = r.tapePerRow * s.tapeW * scaleX;   // 링테이프 구역
+    const wasteW   = SVG_W - filterW - tapeZW;           // 순수 낭비
+
+    const midY     = y + drawH / 2;
+    const capY     = y + drawH;                          // 캡션 바 시작 Y
+
+    // ① 필터 구역 배경
+    const filterRect = `<rect x="0" y="${y}" width="${filterW}" height="${drawH}" fill="${color.fill}" stroke="${color.stroke}" stroke-width="1.2"/>`;
+
+    // ② 취수 구분선 (세로 점선)
+    const dividers = Array.from({ length: r.pcsPerRow - 1 }, (_, j) =>
+      `<line x1="${(j+1)*r.needW*scaleX}" y1="${y}" x2="${(j+1)*r.needW*scaleX}" y2="${capY}" stroke="${color.stroke}" stroke-width="0.8" stroke-dasharray="4,3" opacity="0.6"/>`
+    ).join('');
+
+    // ③ 링테이프 구역 (amber)
+    const tapeSvg = tapeZW > 0
+      ? `<rect x="${filterW}" y="${y}" width="${tapeZW}" height="${drawH}" fill="#FEF3C7" stroke="#D97706" stroke-width="0.8" stroke-dasharray="3,2"/>
+         ${tapeZW > 14 ? `<text x="${filterW + tapeZW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.min(9, tapeZW * 0.45)}" fill="#92400E" font-weight="700">T${r.tapePerRow}</text>` : ''}`
+      : '';
+
+    // ④ 낭비 구역 (gray 사선)
+    const wasteSvg = wasteW > 2
+      ? `<rect x="${filterW + tapeZW}" y="${y}" width="${wasteW}" height="${drawH}" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="0.8" stroke-dasharray="5,4"/>
+         ${wasteW > 32 ? `<text x="${filterW + tapeZW + wasteW/2}" y="${midY}" text-anchor="middle" dominant-baseline="middle" font-size="8" fill="#94A3B8">낭비 ${Math.round(r.remainW - r.tapePerRow * s.tapeW)}mm</text>` : ''}`
+      : '';
+
+    // ⑤ 메인 라벨 2줄: 링×총재단길이L / 폭수/장수
+    const fs = Math.max(11, Math.min(14, drawH * 0.28));
+    const rowsTxt = r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`;
+    const lh = fs * 0.65; // 줄 간격 (2줄이므로 좁게)
+    const mainLabel = `
+      <text x="${filterW/2}" y="${midY - lh}" text-anchor="middle" dominant-baseline="middle" font-size="${fs}" fill="${color.text}" font-weight="700">링${p.ring}×${r.cutLen}L</text>
+      <text x="${filterW/2}" y="${midY + lh}" text-anchor="middle" dominant-baseline="middle" font-size="${Math.max(9, fs * 0.85)}" fill="${color.text}" font-weight="600">${r.pcsPerRow}폭/${rowsTxt}장</text>`;
+
+    // ⑥ Y축 세로 치수선 (왼쪽) — 재단사가 세로 방향 치수 확인
+    const dimX = -22;
+    const dimLine = `
+      <line x1="${dimX}" y1="${y}" x2="${dimX}" y2="${capY}" stroke="${color.stroke}" stroke-width="0.8" opacity="0.7"/>
+      <line x1="${dimX-5}" y1="${y}"   x2="${dimX+5}" y2="${y}"   stroke="${color.stroke}" stroke-width="0.8" opacity="0.7"/>
+      <line x1="${dimX-5}" y1="${capY}" x2="${dimX+5}" y2="${capY}" stroke="${color.stroke}" stroke-width="0.8" opacity="0.7"/>
+      <text transform="rotate(-90,${dimX-10},${y + drawH/2})" x="${dimX-10}" y="${y + drawH/2}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="${color.text}" font-weight="600" opacity="0.85">${r.cutLen.toLocaleString()}mm</text>`;
+
+    // ⑦ 캡션 바
+    const usedMm   = r.pcsPerRow * r.needW + r.tapePerRow * s.tapeW;
+    const usagePct = (usedMm / s.fabricW * 100).toFixed(1);
+    const capLeft  = `폭 ${s.fabricW}mm → ${r.pcsPerRow}개${r.tapePerRow > 0 ? ` + 링테이프 ${r.tapePerRow}줄` : ''} (${usagePct}% 사용)`;
+    const capRight = r.tapePerRow > 0
+      ? `링테이프 ${r.tapePerRow}줄`
+      : (wasteW > 5 ? `잔여 ${Math.round(r.remainW)}mm` : '');
+    const capSvg = `<rect x="0" y="${capY}" width="${SVG_W}" height="${CAP_H}" fill="${color.fill}" opacity="0.45"/>
+      <line x1="0" y1="${capY}" x2="${SVG_W}" y2="${capY}" stroke="${color.stroke}" stroke-width="0.6" opacity="0.4"/>
+      <text x="5" y="${capY + CAP_H/2 + 1}" dominant-baseline="middle" font-size="8.5" fill="${color.text}">${capLeft}</text>
+      ${capRight ? `<text x="${SVG_W-5}" y="${capY + CAP_H/2 + 1}" text-anchor="end" dominant-baseline="middle" font-size="8.5" fill="#92400E">${capRight}</text>` : ''}`;
+
+    // ⑧ 구간 하단 구분선
+    const borderLine = `<line x1="0" y1="${y+bandH}" x2="${SVG_W}" y2="${y+bandH}" stroke="#CBD5E1" stroke-width="1"/>`;
+
+    return `${dimLine}${filterRect}${tapeSvg}${wasteSvg}${dividers}${mainLabel}${capSvg}${borderLine}`;
+  }).join('');
+
+  // 상단 원단 폭 표시
+  const topRule = `<line x1="0" y1="0" x2="${SVG_W}" y2="0" stroke="#94A3B8" stroke-width="1.2"/>
+    <text x="${SVG_W/2}" y="-5" text-anchor="middle" font-size="10" fill="#64748B">← 원단 폭 ${s.fabricW}mm →</text>`;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="-36 -16 ${SVG_W+36} ${svgH+18}" style="display:block;border:1px solid #E2E8F0;border-radius:8px;background:#fff;">${topRule}${bandsSvg}</svg>`;
+
+  document.getElementById('cut-diagram-svg').innerHTML = svg;
+  document.getElementById('cut-diagram-scale').textContent =
+    `축척 약 1:${Math.round(1 / Math.max(scaleY, 0.001))} (Y축)`;
+}
+
+// ── 작업 지시서 인쇄 ─────────────────────────────
+function printWorkOrder() {
+  const s = getShared();
+  const results = products.map(p => ({ p, r: calcOne(p, s) }));
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { showToast('⚠️ 계산된 제품이 없습니다'); return; }
+
+  const dateStr = new Date().toLocaleString('ko-KR');
+  document.getElementById('wo-date').textContent = dateStr;
+  document.getElementById('wo-print-date').textContent = dateStr;
+
+  const grandM    = valid.reduce((a, e) => a + e.r.totalM, 0);
+  const grandMg   = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const totalQty  = valid.reduce((a, e) => a + e.r.qty, 0);
+  const sumCutLen = valid.reduce((a, e) => a + e.r.cutLen, 0);
+  const rolls = s.rollLen > 0 ? Math.ceil(grandMg / s.rollLen) : '—';
+
+  document.getElementById('wo-tbody').innerHTML = valid.map(({ p, r }, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td>H${p.h||'?'} × ${r.cutLen}L</td>
+      <td>${p.ring}</td>
+      <td>${p.qty}개</td>
+      <td>${Math.round(r.needW)}mm</td>
+      <td>${r.pcsPerRow}개/폭</td>
+      <td>${r.partialPcs > 0 ? `${r.rows}/${r.partialPcs}` : `${r.rows}`}</td>
+      <td>${r.cutLen}mm</td>
+      <td>${r.totalMMargin.toFixed(2)}M</td>
+    </tr>`).join('');
+
+  document.getElementById('wo-tfoot').innerHTML = `
+    <tr class="wo-total-row">
+      <td colspan="4">합계 ${valid.length}종 · ${totalQty}개</td>
+      <td colspan="2">순수 ${grandM.toFixed(2)}M</td>
+      <td></td>
+      <td style="text-align:center;">${sumCutLen.toLocaleString()}mm</td>
+      <td>발주량 ${grandMg.toFixed(2)}M (${rolls}롤)</td>
+    </tr>`;
+
+
+  // 평면도 SVG 복사
+  const diagSvg = document.getElementById('cut-diagram-svg').innerHTML;
+  document.getElementById('wo-diagram').innerHTML = diagSvg || '';
+
+  window.print();
+}
+
+// ── 전체 재렌더 (구조 변경 시) ────────────────────
+function calc() {
+  renderTableStructure();
+  calcOnly();
+}
+
+// ── 요약 패널 렌더 ───────────────────────────────
+function renderSummary(results, s) {
+  const valid = results.filter(e => e.r);
+  const grandMg = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const grandM  = valid.reduce((a, e) => a + e.r.totalM, 0);
+  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
+
+  if (valid.length > 0) {
+    document.getElementById('sum-total').textContent = grandMg.toFixed(2);
+    document.getElementById('sum-sub').textContent =
+      `${valid.length}종 · ${totalQty}개 생산 · 여유(${s.margin}%) 포함`;
+  } else {
+    document.getElementById('sum-total').textContent = '—';
+    document.getElementById('sum-sub').textContent = '제품을 추가하고 규격을 입력해 주세요';
+  }
+
+  const listEl = document.getElementById('prod-result-list');
+  if (valid.length === 0) { listEl.innerHTML = ''; return; }
+
+  listEl.innerHTML = results.map(({ p, r }, i) => {
+    if (!r) return '';
+    const focused = p.id === focusId ? 'focused' : '';
+    const ring = parseFloat(p.ring) || 0;
+    const h    = p.h || '?';
+    return `<div class="prod-result-item ${focused}" onclick="setFocusRow(${p.id})" style="cursor:pointer;">
+      <div class="pri-num">${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div class="pri-spec"><strong>H${h} / 링${ring} × ${p.length}L</strong></div>
+        <div class="pri-spec" style="margin-top:2px;">${p.qty}개 · 취수 ${r.pcsPerRow}개/폭 · ${r.rows}장 · 재단 ${r.cutLen}mm</div>
+      </div>
+      <div>
+        <div class="pri-val">${r.totalMMargin.toFixed(2)} M</div>
+        <div class="pri-val sub">(순 ${r.totalM.toFixed(2)})</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 포커스 행 선택 ───────────────────────────────
+function setFocusRow(id) {
+  focusId = id;
+  calcOnly(); // 구조 재렌더 불필요
+}
+
+// ── 시각화 ───────────────────────────────────────
+function renderVis(pcs, needW, fabricW, remainW, tapePerRow, tapeW, prodIdx) {
+  const cont = document.getElementById('vis-pcs');
+  cont.innerHTML = '';
+  const title = document.getElementById('vis-title');
+
+  if (!pcs || !fabricW) {
+    cont.innerHTML = '<div style="color:var(--text-mute);font-size:10px;padding:12px;font-family:var(--mono);">규격 입력 후 표시</div>';
+    document.getElementById('vis-left').textContent  = '원단 폭';
+    document.getElementById('vis-right').textContent = '잔여';
+    title.textContent = '▸ 원단 폭 단면 (폭 방향 레이아웃)';
+    return;
+  }
+
+  title.textContent = `▸ ${prodIdx}번 제품 기준 — 원단 폭 단면`;
+
+  for (let i = 0; i < pcs; i++) {
+    const el = document.createElement('div');
+    el.className = 'vis-piece';
+    el.style.flex = needW;
+    el.textContent = `${i+1}`;
+    cont.appendChild(el);
+  }
+  if (remainW > 0) {
+    if (tapePerRow > 0) {
+      for (let t = 0; t < tapePerRow; t++) {
+        const tp = document.createElement('div');
+        tp.className = 'vis-piece';
+        tp.style.flex = tapeW;
+        tp.style.background = 'rgba(252,211,77,0.18)';
+        tp.style.borderLeft  = '1px dashed rgba(252,211,77,0.5)';
+        tp.style.color = 'var(--amber)';
+        tp.style.fontSize = '8px';
+        tp.textContent = `T${t+1}`;
+        cont.appendChild(tp);
+      }
+      const lo = remainW - tapePerRow * tapeW;
+      if (lo > 2) {
+        const el = document.createElement('div');
+        el.className = 'vis-piece vis-remainder';
+        el.style.flex = lo; el.style.fontSize = '8px';
+        el.textContent = lo.toFixed(0);
+        cont.appendChild(el);
+      }
+    } else {
+      const rem = document.createElement('div');
+      rem.className = 'vis-piece vis-remainder';
+      rem.style.flex = remainW;
+      rem.textContent = remainW.toFixed(0);
+      cont.appendChild(rem);
+    }
+  }
+
+  const used = pcs * needW;
+  document.getElementById('vis-left').textContent =
+    `${fabricW}mm → ${pcs}개${tapePerRow > 0 ? ` + 링테이프 ${tapePerRow}줄` : ''} (${(used/fabricW*100).toFixed(1)}% 사용)`;
+  document.getElementById('vis-right').textContent = remainW > 0
+    ? (tapePerRow > 0 ? `링테이프 ${tapePerRow}줄` : `잔여 ${remainW.toFixed(0)}mm`)
+    : '잔여 없음';
+}
+
+// ── 빠른 선택 헬퍼 ───────────────────────────────
+function setFabric(el, val) {
+  document.querySelectorAll('.qbtn.green').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (val > 0) document.getElementById('fabric_w').value = val;
+  else { document.getElementById('fabric_w').value = ''; document.getElementById('fabric_w').focus(); }
+  calc();
+}
+function onFabricInput() {
+  document.querySelectorAll('.qbtn.green').forEach(b => b.classList.remove('active'));
+}
+function setVal(inputId, el, val) {
+  const group = el.parentElement;
+  group.querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(inputId).value = val;
+  calc();
+}
+
+function setMargin(el, val) {
+  document.getElementById('margin-btns').querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('margin_val').value = val;
+  calcOnly();
+}
+
+function onMarginInput() {
+  // 직접 입력 시 모든 버튼 비활성화
+  document.getElementById('margin-btns').querySelectorAll('.qbtn').forEach(b => b.classList.remove('active'));
+}
+
+// ── 결과 복사 ────────────────────────────────────
+function copyResult() {
+  const s = getShared();
+  const results = products.map(p => ({ p, r: calcOne(p, s) }));
+  const valid = results.filter(e => e.r);
+  if (!valid.length) { showToast('⚠️ 계산된 제품이 없습니다'); return; }
+
+  const grandM  = valid.reduce((a, e) => a + e.r.totalM,       0);
+  const grandMg = valid.reduce((a, e) => a + e.r.totalMMargin, 0);
+  const totalQty = valid.reduce((a, e) => a + e.r.qty, 0);
+
+  const lines = valid.map(({ p, r }, i) =>
+    `[${String(i+1).padStart(2,'0')}] H${p.h||'?'} / 링${p.ring} × ${p.length}L · ${p.qty}개\n` +
+    `     취수 ${r.pcsPerRow}개/폭 · ${r.rows}장 · 재단 ${r.cutLen}mm · ${r.totalMMargin.toFixed(2)}M`
+  ).join('\n');
+
+  const rolls = s.rollLen > 0 ? Math.ceil(grandMg / s.rollLen) : '—';
+  const text =
+`━━━━━━━━━━━━━━━━━━━━━━━━
+✂️ 서진필터 재단 계산 결과
+━━━━━━━━━━━━━━━━━━━━━━━━
+작성일시: ${new Date().toLocaleString('ko-KR')}
+
+【 공통 설정 】
+원단 폭: ${s.fabricW}mm  본체 시접: ${s.seamB}mm
+상부 스냅링: ${s.snapAdd}mm  하부 덧단: ${s.hemAdd}mm  여유율: ${s.margin}%
+
+【 제품별 재단 결과 】
+${lines}
+
+【 합계 】
+${valid.length}종 · 총 ${totalQty}개 생산
+순수 원단: ${grandM.toFixed(2)}M
+여유(${s.margin}%) 포함 발주량: ${grandMg.toFixed(2)}M
+롤 발주 수량: ${rolls}롤 (롤당 ${s.rollLen}m 기준)
+━━━━━━━━━━━━━━━━━━━━━━━━
+서진필터 재단 계산기 v3
+━━━━━━━━━━━━━━━━━━━━━━━━`;
+
+  navigator.clipboard.writeText(text).then(() => showToast('✅ 결과가 복사되었습니다!'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('✅ 복사 완료!');
+    });
+}
+
+// ── 세션 저장 / 불러오기 ─────────────────────────
+const SK = 'sjfilter_sessions';
+const MAX_SESSIONS = 10;
+
+function getSession()  { try { return JSON.parse(localStorage.getItem(SK)) || []; } catch { return []; } }
+function setSession(a) { localStorage.setItem(SK, JSON.stringify(a)); }
+
+function saveSession() {
+  const s = getShared();
+  const valid = products.filter(p => p.ring && p.length && p.qty);
+  if (!valid.length) { showToast('⚠️ 링치수·길이·수량을 입력하세요'); return; }
+
+  const sessions = getSession();
+  if (sessions.length >= MAX_SESSIONS) { showToast('⚠️ 최대 10개까지 저장됩니다. 기존 항목을 삭제해 주세요.'); return; }
+
+  const label = valid.length === 1
+    ? `링${valid[0].ring}×${valid[0].length}L ${valid[0].qty}개`
+    : `${valid.length}종 혼합 (링${valid[0].ring}… 외)`;
+
+  sessions.push({ id: Date.now(), label, shared: s, products: JSON.parse(JSON.stringify(products)) });
+  setSession(sessions);
+  renderProfiles();
+  showToast('💾 저장되었습니다!');
+}
+
+function loadSession(id) {
+  const sess = getSession().find(x => x.id === id);
+  if (!sess) return;
+  // 설정 복원
+  document.getElementById('fabric_w').value   = sess.shared.fabricW;
+  document.getElementById('seam_body').value  = sess.shared.seamB;
+  document.getElementById('seam_snap').value  = sess.shared.snapAdd;
+  document.getElementById('seam_hem').value   = sess.shared.hemAdd;
+  document.getElementById('tape_w').value     = sess.shared.tapeW;
+  document.getElementById('margin_val').value = sess.shared.margin;
+  document.getElementById('roll_len').value   = sess.shared.rollLen || 100;
+  // 제품 복원
+  products = sess.products.map(p => ({ ...p }));
+  nextId   = Math.max(...products.map(p => p.id)) + 1;
+  focusId  = products[0]?.id ?? null;
+  renderTableStructure();
+  calcOnly();
+  showToast(`📂 "${sess.label}" 불러오기 완료`);
+}
+
+function deleteSession(id) {
+  setSession(getSession().filter(x => x.id !== id));
+  renderProfiles();
+  showToast('🗑️ 삭제되었습니다');
+}
+
+function renderProfiles() {
+  const list = document.getElementById('profile-list');
+  const sessions = getSession();
+  if (!sessions.length) { list.innerHTML = '<div class="profile-empty">저장된 목록이 없습니다</div>'; return; }
+  list.innerHTML = sessions.map(s => `
+    <div class="profile-item">
+      <div class="profile-info">
+        <div class="profile-name">${s.label}</div>
+        <div class="profile-spec">${new Date(s.id).toLocaleDateString('ko-KR')} · 원단 ${s.shared.fabricW}mm · 여유 ${s.shared.margin}%</div>
+      </div>
+      <button class="profile-btn" onclick="loadSession(${s.id})">불러오기</button>
+      <button class="profile-btn del" onclick="deleteSession(${s.id})">삭제</button>
+    </div>
+  `).join('');
+}
+
+// ── 초기화 ───────────────────────────────────────
+function resetAll() {
+  if (!confirm('모든 입력을 초기화할까요?')) return;
+
+  // 공통 설정값 초기화
+  document.getElementById('fabric_w').value   = '2150';
+  document.getElementById('seam_body').value  = '25';
+  document.getElementById('seam_snap').value  = '100';
+  document.getElementById('seam_hem').value   = '0';
+  document.getElementById('tape_w').value     = '67';
+  document.getElementById('margin_val').value = '5';
+  document.getElementById('roll_len').value   = '100';
+
+  // 원단폭 빠른선택 버튼 active 초기화 (2150 활성)
+  document.querySelectorAll('.qbtn.green').forEach(b => b.classList.remove('active'));
+  const fabricBtns = document.querySelectorAll('.qbtn.green');
+  if (fabricBtns[0]) fabricBtns[0].classList.add('active'); // 2,150mm
+
+  // 시접/여유율 빠른선택 버튼 active 초기화
+  document.querySelectorAll('.quick-btns').forEach(group => {
+    group.querySelectorAll('.qbtn:not(.green)').forEach(b => b.classList.remove('active'));
+  });
+  // 본체시접 25 활성, 상부스냅링 100 활성, 여유율 5% 활성
+  const seamGroups = document.querySelectorAll('.quick-btns');
+  if (seamGroups[1]) seamGroups[1].querySelector('.qbtn')?.classList.add('active');  // 25
+  if (seamGroups[2]) {
+    const btns = seamGroups[2].querySelectorAll('.qbtn');
+    if (btns[1]) btns[1].classList.add('active'); // 100
+  }
+  const marginBtns = document.getElementById('margin-btns')?.querySelectorAll('.qbtn');
+  if (marginBtns) marginBtns.forEach(b => { if(b.textContent==='5%') b.classList.add('active'); });
+
+  // 제품 목록 초기화 → 테이블 재렌더
+  initProducts();
+  renderTableStructure();
+  calcOnly();
+  renderProfiles();
+  showToast('🔄 초기화 완료');
+}
+
+// ── 발주서 AI 인식 ────────────────────────────────
+let ocrImageBase64 = null;
+let ocrImageType   = 'image/jpeg';
+
+function openOcrModal() {
+  const saved = localStorage.getItem('sjfilter_apikey');
+  if (saved) document.getElementById('ocr-apikey').value = saved;
+  document.getElementById('ocr-result').style.display = 'none';
+  document.getElementById('ocr-modal').style.display  = 'flex';
+}
+
+function closeOcrModal() {
+  document.getElementById('ocr-modal').style.display = 'none';
+}
+
+function onOcrFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  loadOcrFile(file);
+}
+
+function onOcrDrop(e) {
+  e.preventDefault();
+  document.getElementById('ocr-drop').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) { showToast('⚠️ 이미지 파일만 지원합니다'); return; }
+  loadOcrFile(file);
+}
+
+function loadOcrFile(file) {
+  ocrImageType = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+    ocrImageBase64 = dataUrl.split(',')[1];
+    const img = document.getElementById('ocr-preview');
+    img.src = dataUrl; img.style.display = 'block';
+    document.getElementById('ocr-drop-text').style.display = 'none';
+    document.getElementById('ocr-result').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function runOcrAnalysis() {
+  const apiKey = document.getElementById('ocr-apikey').value.trim();
+  if (!apiKey)         { showToast('⚠️ API 키를 입력하세요'); return; }
+  if (!ocrImageBase64) { showToast('⚠️ 이미지를 먼저 선택하세요'); return; }
+  localStorage.setItem('sjfilter_apikey', apiKey);
+
+  const btn = document.getElementById('ocr-analyze-btn');
+  btn.innerHTML = '<span class="ocr-spinner"></span>AI 분석 중...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 1024,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: ocrImageType, data: ocrImageBase64 }},
+          { type: 'text', text: `이 발주서 이미지에서 백필터(bag filter) 제품 목록을 추출하세요.
+각 제품의 정보:
+- ring: 타공홀 지름(Ø) 숫자값 (예: Ø160 → 160, Ø142.5 → 142.5)
+- length: 총길이(L) mm 숫자값만 (예: 3200L → 3200, 2475L → 2475)
+- qty: 수량(EA) 숫자값만 (예: 63EA → 63, 30EA → 30)
+
+JSON 배열 형식으로만 응답하세요. 다른 설명 없이.
+예시: [{"ring":160,"length":3200,"qty":63},{"ring":158,"length":2450,"qty":70}]` }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
+    const text = data.content[0].text.trim();
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('JSON 형식 응답을 받지 못했습니다');
+    const items = JSON.parse(match[0]);
+    if (!items.length) throw new Error('추출된 제품이 없습니다');
+    renderOcrResult(items);
+  } catch(err) {
+    showToast('❌ ' + err.message);
+  } finally {
+    btn.innerHTML = '🔍 AI 분석';
+    btn.disabled = false;
+  }
+}
+
+function renderOcrResult(items) {
+  document.getElementById('ocr-result').style.display = 'block';
+  document.getElementById('ocr-tbody').innerHTML = items.map((item, i) => `
+    <tr>
+      <td><input type="checkbox" checked data-idx="${i}"></td>
+      <td>${item.ring}</td>
+      <td>${item.length.toLocaleString()}</td>
+      <td>${item.qty}</td>
+    </tr>`).join('');
+  document.getElementById('ocr-tbody')._items = items;
+}
+
+function applyOcrResult() {
+  const tbody  = document.getElementById('ocr-tbody');
+  const items  = tbody._items;
+  const checks = tbody.querySelectorAll('input[type=checkbox]');
+  let added = 0;
+  checks.forEach(cb => {
+    if (cb.checked) {
+      const item = items[parseInt(cb.dataset.idx)];
+      products.push({ id: nextId++, ring: item.ring, length: item.length, qty: item.qty, h: '' });
+      added++;
+    }
+  });
+  if (added > 0) {
+    closeOcrModal();
+    renderTableStructure();
+    calcOnly();
+    showToast(`✅ ${added}개 제품이 추가되었습니다`);
+  } else {
+    showToast('⚠️ 적용할 항목을 선택하세요');
+  }
+}
+
+// ── 토스트 ───────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── 시작 ─────────────────────────────────────────
+initProducts();
+renderProfiles();
+renderTableStructure();
+calcOnly();
+</script>
+</body>
+</html>
