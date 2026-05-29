@@ -7,6 +7,16 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<script>
+  (function(){
+    var pw = sessionStorage.getItem('admin_auth');
+    if(pw !== '0935'){
+      var input = prompt('관리자 비밀번호를 입력하세요');
+      if(input !== '0935'){ document.write('<p style="text-align:center;margin-top:100px;font-size:1.2rem">비밀번호가 틀렸습니다. 페이지를 닫아주세요.</p>'); throw new Error('auth'); }
+      sessionStorage.setItem('admin_auth','0935');
+    }
+  })();
+</script>
 
   <!-- 목록 화면 -->
   <div id="list-view" class="view">
