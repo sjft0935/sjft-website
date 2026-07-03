@@ -444,33 +444,33 @@
     </div>
     <div class="fg" style="margin-bottom:14px;">
       <label class="fl">원단 폭 <span class="unit">mm</span></label>
-      <input type="number" id="fabric_w" value="2150" oninput="onFabricInput();calc()">
+      <input type="number" id="fabric_w" value="2150" oninput="onFabricInput();debouncedCalc(true)">
     </div>
 
     <div class="form-grid" style="grid-template-columns:repeat(6,1fr);gap:10px;">
       <div class="fg">
         <label class="fl">본체 시접 <span class="unit">mm</span></label>
-        <input type="number" id="seam_body" value="25" oninput="calc()">
+        <input type="number" id="seam_body" value="25" oninput="debouncedCalc(true)">
       </div>
       <div class="fg">
         <label class="fl">상부 스냅링 <span class="unit">mm</span></label>
-        <input type="number" id="seam_snap" value="100" oninput="calc()">
+        <input type="number" id="seam_snap" value="100" oninput="debouncedCalc(true)">
       </div>
       <div class="fg">
         <label class="fl">하부 덧단 <span class="unit">mm</span></label>
-        <input type="number" id="seam_hem" value="0" oninput="calc()" placeholder="0">
+        <input type="number" id="seam_hem" value="0" oninput="debouncedCalc(true)" placeholder="0">
       </div>
       <div class="fg">
         <label class="fl">링테이프 폭 <span class="unit">mm</span></label>
-        <input type="number" id="tape_w" value="67" oninput="calc()">
+        <input type="number" id="tape_w" value="67" oninput="debouncedCalc(true)">
       </div>
       <div class="fg">
         <label class="fl">여유율 <span class="unit">%</span></label>
-        <input type="number" id="margin_val" value="5" min="0" max="50" oninput="onMarginInput();calcOnly()">
+        <input type="number" id="margin_val" value="5" min="0" max="50" oninput="onMarginInput();debouncedCalc(false)">
       </div>
       <div class="fg">
         <label class="fl">롤 1개 길이 <span class="unit">m</span></label>
-        <input type="number" id="roll_len" value="100" oninput="calcOnly()" placeholder="100">
+        <input type="number" id="roll_len" value="100" oninput="debouncedCalc(false)" placeholder="100">
       </div>
     </div>
 
@@ -716,14 +716,19 @@ function removeProduct(id) {
   calcOnly();
 }
 
-// 입력 중에 호출 — 구조 재렌더 없이 데이터만 갱신
+// ── 공용 debounce 타이머 ─────────────────────────
 let _calcTimer = null;
+function debouncedCalc(full) {
+  clearTimeout(_calcTimer);
+  _calcTimer = setTimeout(full ? calc : calcOnly, 200);
+}
+
+// 입력 중에 호출 — 구조 재렌더 없이 데이터만 갱신
 function updateField(id, field, val) {
   const p = products.find(x => x.id === id);
   if (p) p[field] = val;
   focusId = id;
-  clearTimeout(_calcTimer);
-  _calcTimer = setTimeout(calcOnly, 200); // 200ms debounce — 연속 입력 시 불필요한 재렌더 방지
+  debouncedCalc(false); // 200ms debounce — 연속 입력 시 불필요한 재렌더 방지
 }
 
 // ── 숫자 파싱 헬퍼 (0 입력 허용) ────────────────
@@ -1071,10 +1076,24 @@ function renderSummary(results, s) {
   }).join('');
 }
 
-// ── 포커스 행 선택 ───────────────────────────────
+// ── 포커스 행 선택 (경량 — 시각화만 즉시 갱신) ──
 function setFocusRow(id) {
+  if (focusId === id) return; // 같은 행 재클릭 시 무시
   focusId = id;
-  calcOnly(); // 구조 재렌더 불필요
+  // 하이라이트만 즉시 교체 (전체 calcOnly 없음)
+  document.querySelectorAll('#prod-tbody tr').forEach(tr => {
+    const tid = parseInt(tr.id.replace('tr-', ''));
+    tr.className = tid === id ? 'focused-row' : '';
+  });
+  // 해당 제품 시각화만 업데이트
+  const s = getShared();
+  const entry = products.find(x => x.id === id);
+  if (entry) {
+    const r = calcOne(entry, s);
+    const idx = products.indexOf(entry);
+    if (r) renderVis(r.pcsPerRow, r.needW, s.fabricW, r.remainW, r.tapePerRow, s.tapeW, idx + 1);
+    else   renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
+  }
 }
 
 // ── 시각화 ───────────────────────────────────────
