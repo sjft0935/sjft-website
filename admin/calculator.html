@@ -723,7 +723,7 @@ function updateField(id, field, val) {
   if (p) p[field] = val;
   focusId = id;
   clearTimeout(_calcTimer);
-  _calcTimer = setTimeout(calcOnly, 150); // 150ms debounce — 연속 입력 시 불필요한 재렌더 방지
+  _calcTimer = setTimeout(calcOnly, 200); // 200ms debounce — 연속 입력 시 불필요한 재렌더 방지
 }
 
 // ── 숫자 파싱 헬퍼 (0 입력 허용) ────────────────
@@ -857,48 +857,53 @@ function calcOnly() {
   const s = getShared();
   const results = products.map(p => ({ p, r: calcOne(p, s) }));
 
+  // ① 즉시: 테이블 결과 셀 + tfoot (가볍고 빠름 — 입력 중 체감되는 피드백)
   updateTableResults(results);
   renderTfoot(results);
-  renderSummary(results, s);
 
-  // 시각화
-  let fe = results.find(e => e.p.id === focusId && e.r) || results.find(e => e.r);
-  if (fe) renderVis(fe.r.pcsPerRow, fe.r.needW, s.fabricW, fe.r.remainW, fe.r.tapePerRow, s.tapeW, results.indexOf(fe)+1);
-  else    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
+  // ② 다음 프레임: 무거운 패널 렌더 (입력 응답성 유지)
+  requestAnimationFrame(() => {
+    renderSummary(results, s);
 
-  // 경고
-  const alerts = [];
-  results.forEach(({ p, r }, i) => {
-    if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
-    if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
+    // 시각화
+    let fe = results.find(e => e.p.id === focusId && e.r) || results.find(e => e.r);
+    if (fe) renderVis(fe.r.pcsPerRow, fe.r.needW, s.fabricW, fe.r.remainW, fe.r.tapePerRow, s.tapeW, results.indexOf(fe)+1);
+    else    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
+
+    // 경고
+    const alerts = [];
+    results.forEach(({ p, r }, i) => {
+      if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
+      if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
+    });
+    if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
+    const alertEl = document.getElementById('alert-box');
+    alertEl.textContent = alerts.join('\n');
+    alertEl.classList.toggle('show', alerts.length > 0);
+
+    // 뱃지
+    document.getElementById('prod-count-badge').textContent =
+      `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
+
+    // 롤 수 계산
+    const validRes = results.filter(e => e.r);
+    const grandMgTotal = validRes.reduce((a, e) => a + e.r.totalMMargin, 0);
+    const rollBar = document.getElementById('roll-bar');
+    if (validRes.length > 0 && s.rollLen > 0) {
+      const rolls = Math.ceil(grandMgTotal / s.rollLen);
+      document.getElementById('sum-rolls').textContent = rolls;
+      document.getElementById('sum-roll-len').textContent = s.rollLen;
+      rollBar.style.display = 'flex';
+    } else {
+      rollBar.style.display = 'none';
+    }
+
+    // 재단 순서 추천
+    renderCuttingOrder(results, s);
+
+    // 재단 규격 카드
+    renderCutSpec(results);
   });
-  if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
-  const alertEl = document.getElementById('alert-box');
-  alertEl.textContent = alerts.join('\n');
-  alertEl.classList.toggle('show', alerts.length > 0);
-
-  // 뱃지
-  document.getElementById('prod-count-badge').textContent =
-    `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
-
-  // 롤 수 계산
-  const validRes = results.filter(e => e.r);
-  const grandMgTotal = validRes.reduce((a, e) => a + e.r.totalMMargin, 0);
-  const rollBar = document.getElementById('roll-bar');
-  if (validRes.length > 0 && s.rollLen > 0) {
-    const rolls = Math.ceil(grandMgTotal / s.rollLen);
-    document.getElementById('sum-rolls').textContent = rolls;
-    document.getElementById('sum-roll-len').textContent = s.rollLen;
-    rollBar.style.display = 'flex';
-  } else {
-    rollBar.style.display = 'none';
-  }
-
-  // 재단 순서 추천
-  renderCuttingOrder(results, s);
-
-  // 재단 규격 카드
-  renderCutSpec(results);
 }
 
 // ── 재단 규격 카드 ───────────────────────────────
