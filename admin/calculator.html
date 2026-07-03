@@ -444,33 +444,33 @@
     </div>
     <div class="fg" style="margin-bottom:14px;">
       <label class="fl">원단 폭 <span class="unit">mm</span></label>
-      <input type="number" id="fabric_w" value="2150" oninput="onFabricInput();calc()">
+      <input type="number" id="fabric_w" value="2150" oninput="onFabricInput();debouncedCalc(true)">
     </div>
 
     <div class="form-grid" style="grid-template-columns:repeat(6,1fr);gap:10px;">
       <div class="fg">
         <label class="fl">본체 시접 <span class="unit">mm</span></label>
-        <input type="number" id="seam_body" value="25" oninput="calc()">
+        <input type="number" id="seam_body" value="25" oninput="debouncedCalc(true)">
       </div>
       <div class="fg">
         <label class="fl">상부 스냅링 <span class="unit">mm</span></label>
-        <input type="number" id="seam_snap" value="100" oninput="calc()">
+        <input type="number" id="seam_snap" value="100" oninput="debouncedCalc(true)">
       </div>
       <div class="fg">
         <label class="fl">하부 덧단 <span class="unit">mm</span></label>
-        <input type="number" id="seam_hem" value="0" oninput="calc()" placeholder="0">
+        <input type="number" id="seam_hem" value="0" oninput="debouncedCalc(true)" placeholder="0">
       </div>
       <div class="fg">
         <label class="fl">링테이프 폭 <span class="unit">mm</span></label>
-        <input type="number" id="tape_w" value="67" oninput="calc()">
+        <input type="number" id="tape_w" value="67" oninput="debouncedCalc(true)">
       </div>
       <div class="fg">
         <label class="fl">여유율 <span class="unit">%</span></label>
-        <input type="number" id="margin_val" value="5" min="0" max="50" oninput="onMarginInput();calcOnly()">
+        <input type="number" id="margin_val" value="5" min="0" max="50" oninput="onMarginInput();debouncedCalc(false)">
       </div>
       <div class="fg">
         <label class="fl">롤 1개 길이 <span class="unit">m</span></label>
-        <input type="number" id="roll_len" value="100" oninput="calcOnly()" placeholder="100">
+        <input type="number" id="roll_len" value="100" oninput="debouncedCalc(false)" placeholder="100">
       </div>
     </div>
 
@@ -716,12 +716,19 @@ function removeProduct(id) {
   calcOnly();
 }
 
+// ── 공용 debounce 타이머 ─────────────────────────
+let _calcTimer = null;
+function debouncedCalc(full) {
+  clearTimeout(_calcTimer);
+  _calcTimer = setTimeout(full ? calc : calcOnly, 200);
+}
+
 // 입력 중에 호출 — 구조 재렌더 없이 데이터만 갱신
 function updateField(id, field, val) {
   const p = products.find(x => x.id === id);
   if (p) p[field] = val;
   focusId = id;
-  calcOnly(); // 입력 DOM은 건드리지 않음
+  debouncedCalc(false); // 200ms debounce — 연속 입력 시 불필요한 재렌더 방지
 }
 
 // ── 숫자 파싱 헬퍼 (0 입력 허용) ────────────────
@@ -754,7 +761,7 @@ function calcOne(p, s) {
   const needW     = circ + s.seamB;
   const pcsPerRow = s.fabricW > 0 ? Math.floor(s.fabricW / needW) : 0;
   const remainW   = s.fabricW > 0 ? s.fabricW - pcsPerRow * needW : 0;
-  const tapePerRow= remainW >= s.tapeW ? Math.floor(remainW / s.tapeW) : 0;
+  const tapePerRow= (s.tapeW > 0 && remainW >= s.tapeW) ? Math.floor(remainW / s.tapeW) : 0;
   const cutLen    = length + s.snapAdd + s.hemAdd;
   const rows      = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;
   const totalMm   = rows * cutLen;
@@ -855,48 +862,53 @@ function calcOnly() {
   const s = getShared();
   const results = products.map(p => ({ p, r: calcOne(p, s) }));
 
+  // ① 즉시: 테이블 결과 셀 + tfoot (가볍고 빠름 — 입력 중 체감되는 피드백)
   updateTableResults(results);
   renderTfoot(results);
-  renderSummary(results, s);
 
-  // 시각화
-  let fe = results.find(e => e.p.id === focusId && e.r) || results.find(e => e.r);
-  if (fe) renderVis(fe.r.pcsPerRow, fe.r.needW, s.fabricW, fe.r.remainW, fe.r.tapePerRow, s.tapeW, results.indexOf(fe)+1);
-  else    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
+  // ② 다음 프레임: 무거운 패널 렌더 (입력 응답성 유지)
+  requestAnimationFrame(() => {
+    renderSummary(results, s);
 
-  // 경고
-  const alerts = [];
-  results.forEach(({ p, r }, i) => {
-    if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
-    if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
+    // 시각화
+    let fe = results.find(e => e.p.id === focusId && e.r) || results.find(e => e.r);
+    if (fe) renderVis(fe.r.pcsPerRow, fe.r.needW, s.fabricW, fe.r.remainW, fe.r.tapePerRow, s.tapeW, results.indexOf(fe)+1);
+    else    renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
+
+    // 경고
+    const alerts = [];
+    results.forEach(({ p, r }, i) => {
+      if (r && r.pcsPerRow === 0) alerts.push(`⚠️ [${i+1}번] 원단 폭이 1개 필요 폭(${r.needW.toFixed(1)}mm)보다 좁습니다.`);
+      if (r && r.tapePerRow > 0) alerts.push(`✅ [${i+1}번] 잔여 ${r.remainW.toFixed(0)}mm → 링테이프 ${r.tapePerRow}줄/장 · ${r.tapePcs}개 취수 가능`);
+    });
+    if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
+    const alertEl = document.getElementById('alert-box');
+    alertEl.textContent = alerts.join('\n');
+    alertEl.classList.toggle('show', alerts.length > 0);
+
+    // 뱃지
+    document.getElementById('prod-count-badge').textContent =
+      `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
+
+    // 롤 수 계산
+    const validRes = results.filter(e => e.r);
+    const grandMgTotal = validRes.reduce((a, e) => a + e.r.totalMMargin, 0);
+    const rollBar = document.getElementById('roll-bar');
+    if (validRes.length > 0 && s.rollLen > 0) {
+      const rolls = Math.ceil(grandMgTotal / s.rollLen);
+      document.getElementById('sum-rolls').textContent = rolls;
+      document.getElementById('sum-roll-len').textContent = s.rollLen;
+      rollBar.style.display = 'flex';
+    } else {
+      rollBar.style.display = 'none';
+    }
+
+    // 재단 순서 추천
+    renderCuttingOrder(results, s);
+
+    // 재단 규격 카드
+    renderCutSpec(results);
   });
-  if (s.margin === 0) alerts.push('💡 여유율 0% — 재단 손실 감안 5% 이상 권장합니다.');
-  const alertEl = document.getElementById('alert-box');
-  alertEl.textContent = alerts.join('\n');
-  alertEl.classList.toggle('show', alerts.length > 0);
-
-  // 뱃지
-  document.getElementById('prod-count-badge').textContent =
-    `${products.length}개 제품 / ${results.filter(e=>e.r).length}개 계산완료`;
-
-  // 롤 수 계산
-  const validRes = results.filter(e => e.r);
-  const grandMgTotal = validRes.reduce((a, e) => a + e.r.totalMMargin, 0);
-  const rollBar = document.getElementById('roll-bar');
-  if (validRes.length > 0 && s.rollLen > 0) {
-    const rolls = Math.ceil(grandMgTotal / s.rollLen);
-    document.getElementById('sum-rolls').textContent = rolls;
-    document.getElementById('sum-roll-len').textContent = s.rollLen;
-    rollBar.style.display = 'flex';
-  } else {
-    rollBar.style.display = 'none';
-  }
-
-  // 재단 순서 추천
-  renderCuttingOrder(results, s);
-
-  // 재단 규격 카드
-  renderCutSpec(results);
 }
 
 // ── 재단 규격 카드 ───────────────────────────────
@@ -1064,10 +1076,24 @@ function renderSummary(results, s) {
   }).join('');
 }
 
-// ── 포커스 행 선택 ───────────────────────────────
+// ── 포커스 행 선택 (경량 — 시각화만 즉시 갱신) ──
 function setFocusRow(id) {
+  if (focusId === id) return; // 같은 행 재클릭 시 무시
   focusId = id;
-  calcOnly(); // 구조 재렌더 불필요
+  // 하이라이트만 즉시 교체 (전체 calcOnly 없음)
+  document.querySelectorAll('#prod-tbody tr').forEach(tr => {
+    const tid = parseInt(tr.id.replace('tr-', ''));
+    tr.className = tid === id ? 'focused-row' : '';
+  });
+  // 해당 제품 시각화만 업데이트
+  const s = getShared();
+  const entry = products.find(x => x.id === id);
+  if (entry) {
+    const r = calcOne(entry, s);
+    const idx = products.indexOf(entry);
+    if (r) renderVis(r.pcsPerRow, r.needW, s.fabricW, r.remainW, r.tapePerRow, s.tapeW, idx + 1);
+    else   renderVis(0, 0, s.fabricW, 0, 0, s.tapeW, 0);
+  }
 }
 
 // ── 시각화 ───────────────────────────────────────
