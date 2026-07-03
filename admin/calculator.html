@@ -717,11 +717,13 @@ function removeProduct(id) {
 }
 
 // 입력 중에 호출 — 구조 재렌더 없이 데이터만 갱신
+let _calcTimer = null;
 function updateField(id, field, val) {
   const p = products.find(x => x.id === id);
   if (p) p[field] = val;
   focusId = id;
-  calcOnly(); // 입력 DOM은 건드리지 않음
+  clearTimeout(_calcTimer);
+  _calcTimer = setTimeout(calcOnly, 150); // 150ms debounce — 연속 입력 시 불필요한 재렌더 방지
 }
 
 // ── 숫자 파싱 헬퍼 (0 입력 허용) ────────────────
