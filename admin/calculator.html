@@ -761,7 +761,7 @@ function calcOne(p, s) {
   const needW     = circ + s.seamB;
   const pcsPerRow = s.fabricW > 0 ? Math.floor(s.fabricW / needW) : 0;
   const remainW   = s.fabricW > 0 ? s.fabricW - pcsPerRow * needW : 0;
-  const tapePerRow= remainW >= s.tapeW ? Math.floor(remainW / s.tapeW) : 0;
+  const tapePerRow= (s.tapeW > 0 && remainW >= s.tapeW) ? Math.floor(remainW / s.tapeW) : 0;
   const cutLen    = length + s.snapAdd + s.hemAdd;
   const rows      = pcsPerRow > 0 ? Math.ceil(qty / pcsPerRow) : 0;
   const totalMm   = rows * cutLen;
